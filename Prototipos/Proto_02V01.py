@@ -99,8 +99,8 @@ while True:
         lines = cv.line(iml,(x1,y1),(x2,y2), (0,0,255),2)
 
     #concatenacion de los videos en una sola ventana
-    array3=np.concatenate((lines,circles),axis=1)
-    cv.imshow('pruebas transformadores de Hough',array3)
+    #array3=np.concatenate((lines,circles),axis=1)
+    cv.imshow('pruebas transformadores de Hough',lines)
     if cv.waitKey(1)==ord('q'):
         break
 cap.release()
