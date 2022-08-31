@@ -11,7 +11,7 @@ from matplotlib import pyplot as plt
 import math
 
 #INICIO DE PROGRAMA DE PRUEBAS PARA CAMARAS
-cap= cv.VideoCapture(0)
+cap= cv.VideoCapture(1)
 
 #PROTECCION CONTRA FALTA DE LECTURA
 if not cap.isOpened():
@@ -32,7 +32,7 @@ while True:
     blur= cv.GaussianBlur(gray,(3,3),0)
 #PROCESAMIENTO A: PRUEBA DE DETECTORES DE EJES
     #detector No.1 Canny
-    edgesC = cv.Canny(blur,50,50)
+    edgesC = cv.Canny(blur,50,150, apertureSize=3)
     #detector No.2 Sobel
     sobelX = cv.Sobel(blur, cv.CV_64F, 2, 0)
     sobelY = cv.Sobel(blur, cv.CV_64F, 0, 2)
@@ -48,7 +48,7 @@ while True:
     array=np.concatenate((hor1,hor2),axis=1)
 
     #ventana emergente con camara algoritmo deteccion de ejes
-    cv.imshow('Pruebas deteccion ejes',array)
+##    cv.imshow('Pruebas deteccion ejes',array)
 #PROCESAMIENTO B: PRUEBAS DE THRESHOLDING
 
     retval,thresh1 = cv.threshold(gray,120,255,cv.THRESH_BINARY)
@@ -69,14 +69,21 @@ while True:
     resize=cv.resize(array2,down_points,interpolation=cv.INTER_LINEAR)
 
     #ventana emergente con pruebas de threshold
-    cv.imshow('pruebas thresholding',resize)
+##    cv.imshow('pruebas thresholding',resize)
 #PRUEBA C: TRANSFORMADORES DE HOUGH PARA LINEAS Y PARA CIRCULOS
-    #para esta parte se obtuvo el algoritmo de :https://www.geeksforgeeks.org/line-detection-python-opencv-houghline-method/#:~:text=The%20Hough%20Transform%20is%20a,or%20distorted%20a%20little%20bit.
-    iml=frame
-    lines=cv.HoughLines(edgesC,1,np.pi/180, 200)
+
+##      alt 3 comentar y alt 4 para descomentar
+##    #para esta parte se obtuvo el algoritmo de :https://www.geeksforgeeks.org/line-detection-python-opencv-houghline-method/#:~:text=The%20Hough%20Transform%20is%20a,or%20distorted%20a%20little%20bit.
+    limim=frame
+    cirim=frame
+    lines=0
+    lines=cv.HoughLines(edgesC,1,np.pi/180, 100)#,minLineLength=25,maxLineGap=10)
+
+
+#realizar proteccion porque realmente no funciona como deberia y se traba tanto cuando se acelera mucho un cambio de valores X y Y sino que tambien cuando se tiene un acercamiento donde se pierdan los valores
 
     for r_theta in lines:
-        arr = np.array(r_theta[0], dtype=np.float64)
+        arr = list(np.array(r_theta[0], dtype=np.float64))
         r,theta = arr
         #se almacena el valor del coseno en a
         a = np.cos(theta)
@@ -92,15 +99,32 @@ while True:
         y1= int(y0 + 1000*(a))
         #se almacena el valor redondeado de rcos +1000sin
         x2 = int(x0 - 1000*(-b))
-        # se almacena el valor redondeado de rsin - 1000cos
+        #se almacena el valor redondeado de rsin - 1000cos
         y2 = int(y0 -1000*(a))
         #se dibuja en la imagen la linea que va desde x1,y1 a x2,y2
         #(0,0,255) denota el color de la linea que se dibujara, ROJO
-        lines = cv.line(iml,(x1,y1),(x2,y2), (0,0,255),2)
+        lineas = cv.line(limim,(x1,y1),(x2,y2), (0,0,255),2)
 
+    
+    #CIRCULOS
+    rowsc = blur.shape[0]
+    circles = cv.HoughCircles(blur, cv.HOUGH_GRADIENT, 1, rowsc / 16,param1=100, param2=30,minRadius=1, maxRadius=0)
+    
+    
+    if circles is not None:
+        circles = np.uint16(np.around(circles))
+        for i in circles[0, :]:
+            center = (i[0], i[1])
+            # circle center
+            cv.circle(cirim, center, 1, (0, 100, 100), 3)
+            # circle outline
+            radius = i[2]
+            cv.circle(cirim, center, radius, (255, 150, 255), 3)
+    
+    
     #concatenacion de los videos en una sola ventana
-    #array3=np.concatenate((lines,circles),axis=1)
-    cv.imshow('pruebas transformadores de Hough',lines)
+    array3=np.concatenate((lineas,cirim),axis=1)
+    cv.imshow('pruebas transformadores de Hough',array3)
     if cv.waitKey(1)==ord('q'):
         break
 cap.release()
