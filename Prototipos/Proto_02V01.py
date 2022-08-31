@@ -107,10 +107,18 @@ while True:
 
     
     #CIRCULOS
+    #obtener para la distancia minima entre centros mediante la imagen suavizada
     rowsc = blur.shape[0]
+    #aplicar la transformada de HOUGH
     circles = cv.HoughCircles(blur, cv.HOUGH_GRADIENT, 1, rowsc / 16,param1=100, param2=30,minRadius=1, maxRadius=0)
-    
-    
+    #blur: imagen entrada, HOUGH_GRADIENT: metodo de deteccion, dp: radio inverso de resolucion
+    #min_dist: rowsc/16 es la minima distancia entre los circulos detectados
+    #param1: umbral interno para el detector de bordes de canny
+    #param2: umbral para detecicon de centros
+    #minradius: 0 como default para ser detectado
+    #maxradius: 0 como default para ser detectado
+
+    #dibujamos los circulos detectados
     if circles is not None:
         circles = np.uint16(np.around(circles))
         for i in circles[0, :]:
