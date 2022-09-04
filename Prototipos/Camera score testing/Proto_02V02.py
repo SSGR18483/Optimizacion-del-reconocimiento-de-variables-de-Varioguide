@@ -29,7 +29,7 @@ while True:
     blur= cv.GaussianBlur(gray,(3,3),0)
 #PROCESAMIENTO A: PRUEBA DE DETECTORES DE EJES
     #detector No.1 Canny
-    edgesC = cv.Canny(blur,50,150, apertureSize=3)
+    edgesC = cv.Canny(blur,75,75, apertureSize=3)
     #detector No.2 Sobel
     sobelX = cv.Sobel(blur, cv.CV_64F, 2, 0)
     sobelY = cv.Sobel(blur, cv.CV_64F, 0, 2)
@@ -73,7 +73,7 @@ while True:
 ##    #para esta parte se obtuvo el algoritmo de :https://www.geeksforgeeks.org/line-detection-python-opencv-houghline-method/#:~:text=The%20Hough%20Transform%20is%20a,or%20distorted%20a%20little%20bit.
     limim=frame
     cirim=frame
-    lines=cv.HoughLines(edgesC,1,np.pi/180, 100)#,minLineLength=25,maxLineGap=10)
+    lines=cv.HoughLines(edgesC,1,np.pi/180, 150)#,minLineLength=25,maxLineGap=10)
 
 
 #realizar proteccion porque realmente no funciona como deberia y se traba tanto cuando se acelera mucho un cambio de valores X y Y sino que tambien cuando se tiene un acercamiento donde se pierdan los valores
@@ -106,7 +106,7 @@ while True:
     #obtener para la distancia minima entre centros mediante la imagen suavizada
     rowsc = blur.shape[0]
     #aplicar la transformada de HOUGH
-    circles = cv.HoughCircles(blur, cv.HOUGH_GRADIENT, 1, rowsc / 4,param1=100, param2=50,minRadius=10, maxRadius=50)
+    circles = cv.HoughCircles(blur, cv.HOUGH_GRADIENT, 1, rowsc / 4,param1=200, param2=25,minRadius=5, maxRadius=50)
     #blur: imagen entrada, HOUGH_GRADIENT: metodo de deteccion, dp: radio inverso de resolucion
     #min_dist: rowsc/16 es la minima distancia entre los circulos detectados
     #param1: umbral interno para el detector de bordes de canny
