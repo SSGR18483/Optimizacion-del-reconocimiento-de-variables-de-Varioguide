@@ -9,7 +9,7 @@ import numpy as np
 import cv2 as cv
 from matplotlib import pyplot as plt
 import math
-import tensorflow as tf
+
 #INICIO DE PROGRAMA DE PRUEBAS PARA CAMARAS
 cap= cv.VideoCapture(1)
 
@@ -48,7 +48,7 @@ while True:
     array=np.concatenate((hor1,hor2),axis=1)
 
     #ventana emergente con camara algoritmo deteccion de ejes
-##    cv.imshow('Pruebas deteccion ejes',array)
+    cv.imshow('Pruebas deteccion ejes',array)
 #PROCESAMIENTO B: PRUEBAS DE THRESHOLDING
 
     retval,thresh1 = cv.threshold(gray,120,255,cv.THRESH_BINARY)
@@ -69,7 +69,7 @@ while True:
     resize=cv.resize(array2,down_points,interpolation=cv.INTER_LINEAR)
 
     #ventana emergente con pruebas de threshold
-##    cv.imshow('pruebas thresholding',resize)
+    cv.imshow('pruebas thresholding',resize)
 #PRUEBA C: TRANSFORMADORES DE HOUGH PARA LINEAS Y PARA CIRCULOS
 
 ##      alt 3 comentar y alt 4 para descomentar

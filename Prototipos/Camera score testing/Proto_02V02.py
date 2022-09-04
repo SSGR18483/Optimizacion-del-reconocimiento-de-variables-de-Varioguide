@@ -7,9 +7,6 @@
 #IMPORTE DE LIBRERIAS NECESARIAS
 import numpy as np
 import cv2 as cv
-from matplotlib import pyplot as plt
-import math
-
 #INICIO DE PROGRAMA DE PRUEBAS PARA CAMARAS
 cap= cv.VideoCapture(1)
 
@@ -51,11 +48,11 @@ while True:
 ##    cv.imshow('Pruebas deteccion ejes',array)
 #PROCESAMIENTO B: PRUEBAS DE THRESHOLDING
 
-    retval,thresh1 = cv.threshold(gray,120,255,cv.THRESH_BINARY)
-    retval,thresh2 = cv.threshold(gray,120,255,cv.THRESH_BINARY_INV)
-    retval,thresh3 = cv.threshold(gray,120,255,cv.THRESH_TRUNC)
-    retvl,thresh4 = cv.threshold(gray,120,255,cv.THRESH_TOZERO)
-    retvl,thresh5 = cv.threshold(gray,120,255,cv.THRESH_TOZERO_INV)
+    thresh1 = cv.threshold(gray,120,255,cv.THRESH_BINARY)
+    thresh2 = cv.threshold(gray,120,255,cv.THRESH_BINARY_INV)
+    thresh3 = cv.threshold(gray,120,255,cv.THRESH_TRUNC)
+    thresh4 = cv.threshold(gray,120,255,cv.THRESH_TOZERO)
+    thresh5 = cv.threshold(gray,120,255,cv.THRESH_TOZERO_INV)
     thresh6 = cv.adaptiveThreshold(gray,255,cv.ADAPTIVE_THRESH_MEAN_C,cv.THRESH_BINARY,199,5)
     thresh7 = cv.adaptiveThreshold(gray,255,cv.ADAPTIVE_THRESH_GAUSSIAN_C,cv.THRESH_BINARY,199,5)
     #Concatenamos en una sola ventana los videos
@@ -76,7 +73,6 @@ while True:
 ##    #para esta parte se obtuvo el algoritmo de :https://www.geeksforgeeks.org/line-detection-python-opencv-houghline-method/#:~:text=The%20Hough%20Transform%20is%20a,or%20distorted%20a%20little%20bit.
     limim=frame
     cirim=frame
-    lines=0
     lines=cv.HoughLines(edgesC,1,np.pi/180, 100)#,minLineLength=25,maxLineGap=10)
 
 
@@ -105,12 +101,12 @@ while True:
         #(0,0,255) denota el color de la linea que se dibujara, ROJO
         lineas = cv.line(limim,(x1,y1),(x2,y2), (0,0,255),2)
 
-    
+
     #CIRCULOS
     #obtener para la distancia minima entre centros mediante la imagen suavizada
     rowsc = blur.shape[0]
     #aplicar la transformada de HOUGH
-    circles = cv.HoughCircles(blur, cv.HOUGH_GRADIENT, 1, rowsc / 16,param1=100, param2=30,minRadius=1, maxRadius=0)
+    circles = cv.HoughCircles(blur, cv.HOUGH_GRADIENT, 1, rowsc / 4,param1=100, param2=30,minRadius=10, maxRadius=50)
     #blur: imagen entrada, HOUGH_GRADIENT: metodo de deteccion, dp: radio inverso de resolucion
     #min_dist: rowsc/16 es la minima distancia entre los circulos detectados
     #param1: umbral interno para el detector de bordes de canny
@@ -128,12 +124,34 @@ while True:
             # circle outline
             radius = i[2]
             cv.circle(cirim, center, radius, (255, 150, 255), 3)
-    
-    
+
     #concatenacion de los videos en una sola ventana
-    array3=np.concatenate((lineas,cirim),axis=1)
-    cv.imshow('pruebas transformadores de Hough',array3)
+    cv.imshow('pruebas transformadores de Hough',cirim)
+
+    #Definir datos de ingreso
+
+    #preprosesar los datos
+
+    #Definir modelo e hiper parametros
+
+    Img_size=[2048,1920]
+    Batch_size=10
+    Epochs=30
+    Max_seq_L=10
+    Num_features=2048#ni idea
+
+    #compilar modelo
+
+    #entrenar modelo
+
+    #evaluar modelo
+
+
+
     if cv.waitKey(1)==ord('q'):
         break
 cap.release()
 cv.destroyAllWindows()
+
+
+
