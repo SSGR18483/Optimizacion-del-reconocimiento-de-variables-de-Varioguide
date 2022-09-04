@@ -48,11 +48,11 @@ while True:
 ##    cv.imshow('Pruebas deteccion ejes',array)
 #PROCESAMIENTO B: PRUEBAS DE THRESHOLDING
 
-    thresh1 = cv.threshold(gray,120,255,cv.THRESH_BINARY)
-    thresh2 = cv.threshold(gray,120,255,cv.THRESH_BINARY_INV)
-    thresh3 = cv.threshold(gray,120,255,cv.THRESH_TRUNC)
-    thresh4 = cv.threshold(gray,120,255,cv.THRESH_TOZERO)
-    thresh5 = cv.threshold(gray,120,255,cv.THRESH_TOZERO_INV)
+    thresh1 = cv.threshold(gray,120,255,cv.THRESH_BINARY)[1]
+    thresh2 = cv.threshold(gray,120,255,cv.THRESH_BINARY_INV)[1]
+    thresh3 = cv.threshold(gray,120,255,cv.THRESH_TRUNC)[1]
+    thresh4 = cv.threshold(gray,120,255,cv.THRESH_TOZERO)[1]
+    thresh5 = cv.threshold(gray,120,255,cv.THRESH_TOZERO_INV)[1]
     thresh6 = cv.adaptiveThreshold(gray,255,cv.ADAPTIVE_THRESH_MEAN_C,cv.THRESH_BINARY,199,5)
     thresh7 = cv.adaptiveThreshold(gray,255,cv.ADAPTIVE_THRESH_GAUSSIAN_C,cv.THRESH_BINARY,199,5)
     #Concatenamos en una sola ventana los videos
@@ -106,7 +106,7 @@ while True:
     #obtener para la distancia minima entre centros mediante la imagen suavizada
     rowsc = blur.shape[0]
     #aplicar la transformada de HOUGH
-    circles = cv.HoughCircles(blur, cv.HOUGH_GRADIENT, 1, rowsc / 4,param1=100, param2=30,minRadius=10, maxRadius=50)
+    circles = cv.HoughCircles(blur, cv.HOUGH_GRADIENT, 1, rowsc / 4,param1=100, param2=50,minRadius=10, maxRadius=50)
     #blur: imagen entrada, HOUGH_GRADIENT: metodo de deteccion, dp: radio inverso de resolucion
     #min_dist: rowsc/16 es la minima distancia entre los circulos detectados
     #param1: umbral interno para el detector de bordes de canny
