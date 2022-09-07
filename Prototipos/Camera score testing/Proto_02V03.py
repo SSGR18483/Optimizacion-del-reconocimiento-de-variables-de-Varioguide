@@ -9,15 +9,21 @@ import numpy as np
 import cv2 as cv
 import os
 #INICIO DE PROGRAMA DE PRUEBAS PARA CAMARAS
-cap= cv.VideoCapture(1)
+#cap= cv.VideoCapture(1)
+pathimagenes='25.jpg'
+frame= cv.imread(pathimagenes,cv.IMREAD_COLOR)
+down_width1=1920
+down_height1=1080
+down_points1=(down_width1,down_height1)
+frame=cv.resize(frame,down_points1,interpolation=cv.INTER_LINEAR)
 cont=0
-direccion=r'C:\Users\galic\Documents\Diseño\GIT\Trabajo-de-Graduaci-n-SG18483\Prototipos\Camera score testing\Img pasadas por el proceso'
+direccion=r'D:\Documentos\UVG\QUINTO AÑO\Segundo Semestre\Diseño e innovación\GIT\Optimizacion-del-reconocimiento-de-variables-de-Varioguide\Prototipos\Camera score testing\ProcessedVal'
 #PROTECCION CONTRA FALTA DE LECTURA
-if not cap.isOpened():
-    print('no se pudo abrir la camara')
-    exit()
+#if not cap.isOpened():
+    #print('no se pudo abrir la camara')
+    #exit()
 #Captura frame por frame
-ret, frame = cap.read()
+##ret, frame = cap.read()
 
 #proteccion de lectura de frame
 
@@ -29,7 +35,7 @@ gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
 blur= cv.GaussianBlur(gray,(3,3),0)
 #PROCESAMIENTO A: PRUEBA DE DETECTORES DE EJES
 #detector No.1 Canny
-edgesC = cv.Canny(blur,75,75, apertureSize=3)
+edgesC = cv.Canny(blur,150,10, apertureSize=3)
 #detector No.2 Sobel
 sobelX = cv.Sobel(blur, cv.CV_64F, 2, 0)
 sobelY = cv.Sobel(blur, cv.CV_64F, 0, 2)
@@ -43,7 +49,10 @@ lap = np.uint8(np.absolute(lap))
 hor1=np.concatenate((gray,sobelCombinado),axis=0)
 hor2=np.concatenate((lap,edgesC),axis=0)
 array=np.concatenate((hor1,hor2),axis=1)
-
+down_width2=1920
+down_height2=1080
+down_points2=(down_width2,down_height2)
+resize2=cv.resize(array,down_points2,interpolation=cv.INTER_LINEAR)
 #ventana emergente con camara algoritmo deteccion de ejes
 ##    cv.imshow('Pruebas deteccion ejes',array)
 #PROCESAMIENTO B: PRUEBAS DE THRESHOLDING
@@ -60,8 +69,8 @@ hor3=np.concatenate((gray,thresh1,thresh2,thresh3),axis=1)
 hor4=np.concatenate((thresh4,thresh5,thresh6,thresh7),axis=1)
 array2=np.concatenate((hor3,hor4),axis=0)
 #se agrega un downsize debido a que la ventana de opencv  es mas grande que la resolucion de la pantalla
-down_width=1600
-down_height=800
+down_width=1920
+down_height=1080
 down_points=(down_width,down_height)
 resize=cv.resize(array2,down_points,interpolation=cv.INTER_LINEAR)
 
@@ -106,7 +115,7 @@ for r_theta in lines:
 #obtener para la distancia minima entre centros mediante la imagen suavizada
 rowsc = blur.shape[0]
 #aplicar la transformada de HOUGH
-circles = cv.HoughCircles(blur, cv.HOUGH_GRADIENT, 1, rowsc / 4,param1=200, param2=25,minRadius=5, maxRadius=50)
+circles = cv.HoughCircles(blur, cv.HOUGH_GRADIENT, 1, rowsc / 4,param1=200, param2=25,minRadius=40, maxRadius=100)
 #blur: imagen entrada, HOUGH_GRADIENT: metodo de deteccion, dp: radio inverso de resolucion
 #min_dist: rowsc/16 es la minima distancia entre los circulos detectados
 #param1: umbral interno para el detector de bordes de canny
@@ -128,35 +137,18 @@ if circles is not None:
 #concatenacion de los videos en una sola ventana
 #cv.imshow('pruebas transformadores de Hough',cirim)
 os.chdir(direccion)
+ret=True
 if (ret == True):
-    cv.imwrite('LineasCLc920_1.jpg',cirim )
+    cv.imwrite('EdgeiXR_25.jpg', resize2)
     if cv.waitKey(1) == ord('q'):
         exit()#break
 else:
     exit()
-#Definir datos de ingreso
-
-#preprosesar los datos
-
-#Definir modelo e hiper parametros
-
-Img_size=[2048,1920]
-Batch_size=10
-Epochs=30
-Max_seq_L=10
-Num_features=2048#ni idea
-
-#compilar modelo
-
-#entrenar modelo
-
-#evaluar modelo
-
 
 
 if cv.waitKey(1)==ord('q'):
     exit()#break
-cap.release()
+#cap.release()
 cv.destroyAllWindows()
 
 
