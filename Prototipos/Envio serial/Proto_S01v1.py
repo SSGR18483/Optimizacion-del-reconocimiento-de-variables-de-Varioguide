@@ -23,7 +23,7 @@ def Serialsend(j1,j2,j3,j4):
 def TCPsend(j1,j2,j3,j4):
     HOST = "192.168.0.1"
     PORT = 65432
-    
+
     try:
 
     except NameError:
