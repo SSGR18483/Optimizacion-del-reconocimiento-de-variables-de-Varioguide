@@ -11,14 +11,14 @@ import struct
 contador = bytes(111)
 indice = 0
 #buf[indice] = 0
-pasos = 100
+pasos = 0
 buffer = []
 recibiendo = False
 
-port_arduino = 'COM5'
+port_arduino = 'COM3'
 port_tiva = 'COM4'
 
-ser  = serial.Serial(port=port_tiva,baudrate=115200)
+ser  = serial.Serial(port=port_arduino,baudrate=115200)
 ser.flushInput()
 
 def read_until(numero_datos):
@@ -40,7 +40,7 @@ try:
             ser.write(b'0')
             ser.write(str(pasos).encode('ascii'))
         elif (pasos < 10 and pasos >= 0):
-            ser.write(b'00')
+            ser.write(b'01')
             ser.write(str(pasos).encode('ascii'))
             '''
             if (pasos > 0):
@@ -71,18 +71,18 @@ try:
                 #print(''.join(buffer))
                 buffer = []
         '''    
-        datos = ser.read()
-        if (datos == str('O').encode('ascii')):
-            buffer.append(datos)
-            for i in range(1,2):
-                val = ser.read()
-                buffer.append(val)
-            ok = b''.join(buffer)
-            print(ok)
-            buffer = []
-        if (ok == b'OK'):
-            print("Handshake exitoso")
-                    
+##        datos = ser.read()
+##        if (datos == str('O').encode('ascii')):
+##            buffer.append(datos)
+##            for i in range(1,2):
+##                val = ser.read()
+##                buffer.append(val)
+##            ok = b''.join(buffer)
+##            print(ok)
+##            buffer = []
+##        if (ok == b'OK'):
+##            print("Handshake exitoso")
+##                    
         #recv = ser.read(2)
         #print(recv)
         '''
@@ -95,7 +95,7 @@ try:
         if (pasos > 0):
             pasos = pasos - 1
         elif (pasos == 0):
-            ser.write(b'0')
+            ser.write(b'1')
             ser.close()
         time.sleep(0.02)
         

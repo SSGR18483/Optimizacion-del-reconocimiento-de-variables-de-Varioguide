@@ -6,12 +6,14 @@ import socket
 def Serialsend(j1,j2,j3,j4):
     try:
         ser = serial.Serial()
-        ser.port = 'COM5'#escribir al puerto
         ser.baudrate = 9600
-        # ser.bytesize = serial.EIGHTBITS #numero de bits por bytes
-        # ser.parity = serial.PARITY_NONE #que no utilize bsqueda de paridad
-        ser.write("JA:%s_JB:%s_JC:%s_JD:%s"%(j1,j2,j3,j4))
-        time.sleep(0.5)
+        ser.port = 'COM3'#escribir al puerto
+        ser.bytesize = serial.EIGHTBITS #numero de bits por bytes
+        ser.parity = serial.PARITY_NONE #que no utilize bsqueda de paridad
+        ser.open()
+        envio="1"
+        ser.write(envio.encode('ascii'))# JA:%s_JB:%s_JC:%s_JD:%s"%(j1,j2,j3,j4))
+        time.sleep(0.02)
         ser.close()
         message = "Enviado adecuadamente"
     except NameError:
@@ -21,11 +23,21 @@ def Serialsend(j1,j2,j3,j4):
     return print(message)
 
 def TCPsend(j1,j2,j3,j4):
-    HOST = "192.168.0.1"
-    PORT = 65432
-
     try:
-
+        sock = socket.socket()
+        HOST = "192.168.0.1"# Ip en network
+        PORT = 80# Puerto al que se envia
+        sock.connect((host, port))
+        mensaje = "JA:%s_JB:%s_JC:%s_JD:%s"%(j1,j2,j3,j4)#se concatena dato
+        mensaje = mensaje.encode("ascii")#se configura en ascci
+        sock.send(mensaje)#manda el mensaje
+        data = ""
+        while len(data) < len(mensaje):
+            temp = sock.recv(1)
+            temp = temp.decode("ascii")
+            data += temp
+        print(data)
+        sock.close()
     except NameError:
         message='Dato invalido'
     except:
@@ -38,4 +50,5 @@ j3=1
 j4=0.2
 print("Junta A:%s,\t Junta B%s,\t Junta C:%s,\t Junta D:%s"%(j1,j2,j3,j4))
 Serialsend(j1,j2,j3,j4)
+#TCPsend(j1,j2,j3,j4)
 
