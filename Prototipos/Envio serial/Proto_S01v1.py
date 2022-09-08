@@ -43,11 +43,26 @@ def TCPsend(j1,j2,j3,j4):
     except:
         message='No se pudo conectar al cliente'
     return print(message)
-#TEST
+
+arduino = serial.Serial(port='COM3', baudrate=115200, timeout=.1)
 j1=.05
 j2=4.4
 j3=1
 j4=0.2
+def write_read(x):
+    arduino.write(x.encode())
+    time.sleep(2)
+    data = arduino.readline().decode()
+    return data
+
+
+while True:
+    num = "%s/%s/%s/%s"%(j1,j2,j3,j4)#input("Enter a number: ")
+    value = write_read(num)
+    print(value)
+    print("Junta A:%s,\t Junta B%s,\t Junta C:%s,\t Junta D:%s" % (j1, j2, j3, j4))
+arduino.close
+
 print("Junta A:%s,\t Junta B%s,\t Junta C:%s,\t Junta D:%s"%(j1,j2,j3,j4))
 Serialsend(j1,j2,j3,j4)
 #TCPsend(j1,j2,j3,j4)
