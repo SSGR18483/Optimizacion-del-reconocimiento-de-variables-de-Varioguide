@@ -18,8 +18,8 @@ Prueba = []
 LabelsPrueba = ['bordes','bordes','bordes','bordes','bordes','lineas','lineas','lineas','lineas','lineas','threshold','threshold','threshold','threshold','threshold']
 LabelsPrueba = np.array(LabelsPrueba)
 #Se llena de datos la primer lista
-files_Train=glob.glob(r"D:/Documentos/UVG/QUINTO AÑO/Segundo Semestre/Diseño e innovación/GIT/Optimizacion-del-reconocimiento-de-variables-de-Varioguide/Prototipos/Camera score testing/ProcessedTrain/IXR/*.jpg")
-files_Val=glob.glob(r"D:/Documentos/UVG/QUINTO AÑO/Segundo Semestre/Diseño e innovación/GIT/Optimizacion-del-reconocimiento-de-variables-de-Varioguide/Prototipos/Camera score testing/ProcessedVal/*.jpg")
+files_Train=glob.glob(r"C:/Users/galic/Documents/Diseño/GIT/Trabajo-de-Graduaci-n-SG18483/Prototipos/Camera score testing/ProcessedTrain/IXR/*.jpg")
+files_Val=glob.glob(r"C:/Users/galic/Documents/Diseño/GIT/Trabajo-de-Graduaci-n-SG18483/Prototipos/Camera score testing/ProcessedVal/*.jpg")
 for myFile in files_Train:
     print(myFile)
     image = Image.open(myFile).convert('RGB')
@@ -40,7 +40,7 @@ for myFile2 in files_Val:
 #cv.imshow('imagen',Entrenamiento[21])
 #if cv.waitKey(500)==ord('q'):
 #        exit()
-print('Entrenamiento con forma:', np.array(Entrenamiento).shape)
+print('Entrenamiento con forma:', np.array(Entrenamiento))
 print('Prueba con forma:', np.array(Prueba).shape)
 #cv.destroyAllWindows()
 
@@ -77,7 +77,7 @@ model.add(layer1)
 #Entrenamiento
 opt = tf.keras.optimizers.SGD(learning_rate=0.01, momentum=0.84,name='SGD',)
 model.compile(loss=tf.keras.losses.CategoricalCrossentropy(),optimizer=opt ,metrics=['accuracy'])
-history = model.fit(np.array(Entrenamiento),np.array(LTrain),validation_data=(Prueba,np.array(LTest)),epochs=30)
+history = model.fit(Entrenamiento,(LTrain),validation_data=(Prueba,(LTest)),epochs=30)
 
 #Evaluación del modelo
 _, train_acc = model.evaluate(np.array(Entrenamiento), LTrain, verbose = 0)
