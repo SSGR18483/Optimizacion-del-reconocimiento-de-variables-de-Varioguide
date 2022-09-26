@@ -25,12 +25,17 @@ LabelsPrueba = np.array(LabelsPrueba)
 
 #direcciones de los datos
 #PC
-files_Train=glob.glob(r"D:\Documentos\UVG\QUINTO AÑO\Segundo Semestre\Diseño e innovación\GIT\Optimizacion-del-reconocimiento-de-variables-de-Varioguide\Prototipos\Camera score testing\ProcessedTrain\IXR/*.jpg")
-files_Val=glob.glob(r"D:\Documentos\UVG\QUINTO AÑO\Segundo Semestre\Diseño e innovación\GIT\Optimizacion-del-reconocimiento-de-variables-de-Varioguide\Prototipos\Camera score testing\ProcessedVal/*.jpg")
+#files_Train=glob.glob(r"D:\Documentos\UVG\QUINTO AÑO\Segundo Semestre\Diseño e innovación\GIT\Optimizacion-del-reconocimiento-de-variables-de-Varioguide\Prototipos\Camera score testing\ProcessedTrain\IXR/*.jpg")
+#files_Val=glob.glob(r"D:\Documentos\UVG\QUINTO AÑO\Segundo Semestre\Diseño e innovación\GIT\Optimizacion-del-reconocimiento-de-variables-de-Varioguide\Prototipos\Camera score testing\ProcessedVal/*.jpg")
 #Laptop
-#files_Train=glob.glob(r"C:/Users/galic/Documents/Diseño/GIT/Trabajo-de-Graduaci-n-SG18483/Prototipos/Camera score testing/ProcessedTrain/IXR/*.jpg")
-#files_Val=glob.glob(r"C:/Users/galic/Documents/Diseño/GIT/Trabajo-de-Graduaci-n-SG18483/Prototipos/Camera score testing/ProcessedVal/*.jpg")
+files_Train=glob.glob(r"C:/Users/galic/Documents/Diseño/GIT/Trabajo-de-Graduaci-n-SG18483/Prototipos/Camera score testing/ProcessedTrain/IXR/*.jpg")
+files_Val=glob.glob(r"C:/Users/galic/Documents/Diseño/GIT/Trabajo-de-Graduaci-n-SG18483/Prototipos/Camera score testing/ProcessedVal/*.jpg")
 
+#importe de imagenes
+batch_size = 60
+img_height=1080
+img_width=1920
+#primer forma de cargar las imagenes
 for myFile in files_Train:
     print(myFile)
     image = Image.open(myFile).convert('RGB')
@@ -50,8 +55,28 @@ for myFile2 in files_Val:
 
 print('Entrenamiento con forma:', np.array(Entrenamiento).shape)
 print('Prueba con forma:', np.array(Prueba).shape)
+data_dir="C:/Users/galic/Documents/Diseño/GIT/Trabajo-de-Graduaci-n-SG18483/Prototipos/Camera score testing/ProcessedTrain/IXR"
+#data_dir2=r"C:/Users/galic/Documents/Diseño/GIT/Trabajo-de-Graduaci-n-SG18483/Prototipos/Camera score testing/ProcessedVal/*.jpg"
 
-
+#Segunda forma de recoger las imagenes
+train_ds = tf.keras.utils.image_dataset_from_directory(
+  data_dir,
+  labels='inferred',
+  label_mode='int',
+  validation_split=0.2,
+  subset="training",
+  seed=123,
+  image_size=(img_height, img_width),
+  batch_size=batch_size)
+val_ds = tf.keras.utils.image_dataset_from_directory(
+  data_dir,
+  labels='inferred',
+  label_mode='int',
+  validation_split=0.2,
+  subset="validation",
+  seed=123,
+  image_size=(img_height, img_width),
+  batch_size=batch_size)
 # Se extraen las categorías como los valores únicos (diferentes) del array
 # original de labels
 classes = np.unique(LabelsEntrenamiento)
