@@ -11,15 +11,26 @@ from PIL import Image
 from scipy import io
 
 caso = 1
+nb_train_samples = 60
+nb_validation_samples = 15
+epochs = 10
+batch_size = 16
+#pre definir las listas que se van a utilizar
 Entrenamiento = []
 LabelsEntrenamiento = ['bordes','bordes','bordes','bordes','bordes','bordes','bordes','bordes','bordes','bordes','bordes','bordes','bordes','bordes','bordes','bordes','bordes','bordes','bordes','bordes','lineas','lineas','lineas','lineas','lineas','lineas','lineas','lineas','lineas','lineas','lineas','lineas','lineas','lineas','lineas','lineas','lineas','lineas','lineas','lineas','threshold','threshold','threshold','threshold','threshold','threshold','threshold','threshold','threshold','threshold','threshold','threshold','threshold','threshold','threshold','threshold','threshold','threshold','threshold','threshold']
 LabelsEntrenamiento = np.array(LabelsEntrenamiento)
 Prueba = []
 LabelsPrueba = ['bordes','bordes','bordes','bordes','bordes','lineas','lineas','lineas','lineas','lineas','threshold','threshold','threshold','threshold','threshold']
 LabelsPrueba = np.array(LabelsPrueba)
-#Se llena de datos la primer lista
-files_Train=glob.glob(r"C:/Users/galic/Documents/Diseño/GIT/Trabajo-de-Graduaci-n-SG18483/Prototipos/Camera score testing/ProcessedTrain/IXR/*.jpg")
-files_Val=glob.glob(r"C:/Users/galic/Documents/Diseño/GIT/Trabajo-de-Graduaci-n-SG18483/Prototipos/Camera score testing/ProcessedVal/*.jpg")
+
+#direcciones de los datos
+#PC
+files_Train=glob.glob(r"D:\Documentos\UVG\QUINTO AÑO\Segundo Semestre\Diseño e innovación\GIT\Optimizacion-del-reconocimiento-de-variables-de-Varioguide\Prototipos\Camera score testing\ProcessedTrain\IXR/*.jpg")
+files_Val=glob.glob(r"D:\Documentos\UVG\QUINTO AÑO\Segundo Semestre\Diseño e innovación\GIT\Optimizacion-del-reconocimiento-de-variables-de-Varioguide\Prototipos\Camera score testing\ProcessedVal/*.jpg")
+#Laptop
+#files_Train=glob.glob(r"C:/Users/galic/Documents/Diseño/GIT/Trabajo-de-Graduaci-n-SG18483/Prototipos/Camera score testing/ProcessedTrain/IXR/*.jpg")
+#files_Val=glob.glob(r"C:/Users/galic/Documents/Diseño/GIT/Trabajo-de-Graduaci-n-SG18483/Prototipos/Camera score testing/ProcessedVal/*.jpg")
+
 for myFile in files_Train:
     print(myFile)
     image = Image.open(myFile).convert('RGB')
@@ -37,12 +48,9 @@ for myFile2 in files_Val:
     else:
         Prueba.append(image2)
 
-#cv.imshow('imagen',Entrenamiento[21])
-#if cv.waitKey(500)==ord('q'):
-#        exit()
-print('Entrenamiento con forma:', np.array(Entrenamiento))
+print('Entrenamiento con forma:', np.array(Entrenamiento).shape)
 print('Prueba con forma:', np.array(Prueba).shape)
-#cv.destroyAllWindows()
+
 
 # Se extraen las categorías como los valores únicos (diferentes) del array
 # original de labels
@@ -68,7 +76,7 @@ LTrain = tf.keras.utils.to_categorical(YTrainLabel)
 LTest = tf.keras.utils.to_categorical(YTestLabel)
 
 #Definicion
-layer1=tf.keras.layers.Dense(50,activation='sigmoid',input_shape= (1080,1920,3))
+layer1=tf.keras.layers.Dense(50,activation='sigmoid')#,input_shape= (1080,1920,3))
 layer2=tf.keras.layers.Dense(3,activation='relu')
 model=tf.keras.models.Sequential()
 model.add(layer1)
@@ -80,8 +88,8 @@ model.compile(loss=tf.keras.losses.CategoricalCrossentropy(),optimizer=opt ,metr
 history = model.fit(Entrenamiento,(LTrain),validation_data=(Prueba,(LTest)),epochs=30)
 
 #Evaluación del modelo
-_, train_acc = model.evaluate(np.array(Entrenamiento), LTrain, verbose = 0)
-_, val_acc = model.evaluate(np.array(Prueba), LTest, verbose = 0)
+_, train_acc = model.evaluate(Entrenamiento, LTrain, verbose = 0)
+_, val_acc = model.evaluate(Prueba, LTest, verbose = 0)
 print('Train: %.3f, Test: %.3f' % (train_acc, val_acc))
 # Se grafica la evolución de la pérdida durante el entrenamiento y la
 # validación
