@@ -1,5 +1,9 @@
 #UVG Santiago Galicia 18483
-#programa realizado con la ayuda de https://www.tensorflow.org/tutorials/images/classification
+#programa realizado con la ayuda de:
+# https://www.tensorflow.org/tutorials/images/classification
+# https://www.tensorflow.org/tutorials/load_data/images
+# https://www.tensorflow.org/api_docs/python/tf/keras/utils/image_dataset_from_directory
+
 #IMPORTE DE LIBRERIAS NECESARIAS
 import keras
 import matplotlib.pyplot
@@ -13,9 +17,9 @@ from PIL import Image
 from scipy import io
 
 #importe de imagenes
-batch_size = 60
-img_height=1080
-img_width=1920
+batch_size = 75 # se define el tamaño de los grupos
+img_height=1080 # se define el alto de las imagenes
+img_width=1920 # se define el ancho de las imagenes
 data_dir="C:/Users/galic/Documents/Diseño/GIT/Trabajo-de-Graduaci-n-SG18483/Prototipos/Camera score testing/ProcessedTrain/IXR"
 data_dir2="D:/Documentos/UVG/QUINTO AÑO/Segundo Semestre/Diseño e innovación/GIT/Optimizacion-del-reconocimiento-de-variables-de-Varioguide/Prototipos/Camera score testing/ProcessedTrain/IXR"
 
@@ -73,7 +77,7 @@ model = tf.keras.models.Sequential([
 model.compile(optimizer=tf.keras.optimizers.SGD(learning_rate=0.01, momentum=0.82,name='SGD',),
               loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
               metrics=['accuracy'])
-epochs=5
+epochs=15
 history = model.fit(
   train_ds,
   validation_data=val_ds,
@@ -101,6 +105,18 @@ plt.legend(loc='upper right')
 plt.title('Perdida de entrenamiento y validacion')
 plt.show()
 
+model.save('my_model.h5')
+savedir = 'D:/Documentos/UVG/QUINTO AÑO/Segundo Semestre/Diseño e innovación/GIT/Optimizacion-del-reconocimiento-de-variables-de-Varioguide/Resultados'
+tf.keras.models.save_model(
+    model,
+    savedir,
+    overwrite=True,
+    include_optimizer=True,
+    save_format=None,
+    signatures=None,
+    options=None,
+    save_traces=True,
+)
 #Tras entrenamiento se utiliza la predicción
 dirpre="D:/Documentos/UVG/QUINTO AÑO/Segundo Semestre/Diseño e innovación/GIT/Optimizacion-del-reconocimiento-de-variables-de-Varioguide/Prototipos/Camera score testing/ProcessedTest/Lineas1.jpg"
 #mg= tf.keras.utils.load_img()
