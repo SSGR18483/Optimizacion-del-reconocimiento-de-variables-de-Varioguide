@@ -10,14 +10,14 @@ import cv2 as cv
 import os
 #INICIO DE PROGRAMA DE PRUEBAS PARA CAMARAS
 #cap= cv.VideoCapture(1)
-pathimagenes='T5.jpg'
+pathimagenes='5.jpg'
 frame= cv.imread(pathimagenes,cv.IMREAD_COLOR)
 down_width1=1920
 down_height1=1080
 down_points1=(down_width1,down_height1)
 frame=cv.resize(frame,down_points1,interpolation=cv.INTER_LINEAR)
 cont=0
-direccion=r'C:\Users\galic\Documents\Diseño\GIT\Trabajo-de-Graduaci-n-SG18483\Prototipos\Camera score testing\ProcessedVal'
+direccion=r'C:\Users\galic\Documents\Diseño\GIT\Trabajo-de-Graduaci-n-SG18483\Prototipos\Camera score testing'
 #PROTECCION CONTRA FALTA DE LECTURA
 #if not cap.isOpened():
     #print('no se pudo abrir la camara')
@@ -139,7 +139,7 @@ if circles is not None:
 os.chdir(direccion)
 ret=True
 if (ret == True):
-    cv.imwrite('T5_Edges.jpg', resize2)
+    cv.imwrite('Lineas3_720.jpg', cirim)
     if cv.waitKey(1) == ord('q'):
         exit()#break
 else:

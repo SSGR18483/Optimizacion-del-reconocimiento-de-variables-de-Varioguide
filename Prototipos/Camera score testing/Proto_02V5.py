@@ -130,6 +130,6 @@ predictions = model.predict(img_array)
 score = tf.nn.softmax(predictions[0])
 
 print(
-    "This image most likely belongs to {} with a {:.2f} percent confidence."
+    "Con esta imagen se califica con {:.2f} porciento la cámara utilizada."
     .format(class_names[np.argmax(score)], 100 * np.max(score))
 )
