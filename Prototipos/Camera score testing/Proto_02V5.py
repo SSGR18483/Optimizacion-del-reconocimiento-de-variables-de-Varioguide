@@ -68,16 +68,16 @@ model = tf.keras.models.Sequential([
   tf.keras.layers.MaxPooling2D(),
   tf.keras.layers.Conv2D(64, 3, padding='same', activation='relu'),
   tf.keras.layers.MaxPooling2D(),
-  tf.keras.layers.Dropout(0.2),
+  tf.keras.layers.Dropout(0.3),
   tf.keras.layers.Flatten(),
-  tf.keras.layers.Dense(128, activation='relu'),
+  tf.keras.layers.Dense(64, activation='relu'),
   tf.keras.layers.Dense(num_classes)
 ])
 #hyper parametros LR=0.01 y momento de 0.82 con 5 epochs
 model.compile(optimizer=tf.keras.optimizers.SGD(learning_rate=0.01, momentum=0.82,name='SGD',),
               loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
               metrics=['accuracy'])
-epochs=15
+epochs=5
 history = model.fit(
   train_ds,
   validation_data=val_ds,
@@ -118,8 +118,9 @@ tf.keras.models.save_model(
     save_traces=True,
 )
 #Tras entrenamiento se utiliza la predicción
-dirpre="D:/Documentos/UVG/QUINTO AÑO/Segundo Semestre/Diseño e innovación/GIT/Optimizacion-del-reconocimiento-de-variables-de-Varioguide/Prototipos/Camera score testing/ProcessedTest/Lineas1.jpg"
-#mg= tf.keras.utils.load_img()
+
+#################################################       C920s        ##############################################
+dirpre="D:/Documentos/UVG/QUINTO AÑO/Segundo Semestre/Diseño e innovación/GIT/Optimizacion-del-reconocimiento-de-variables-de-Varioguide/Prototipos/Camera score testing/ProcessedTest/Ejes1.jpg"
 img = tf.keras.utils.load_img(
     dirpre, target_size=(img_height, img_width)
 )
@@ -128,8 +129,127 @@ img_array = tf.expand_dims(img_array, 0) # Create a batch
 
 predictions = model.predict(img_array)
 score = tf.nn.softmax(predictions[0])
+print("CAMARA LOGITECH C920s")
+print(
+    "Esta cámara obtiene la calificación de {:.2f} porciento en la primer prueba"
+    .format( 100 * np.max(score))
+)
+dirpre2="D:/Documentos/UVG/QUINTO AÑO/Segundo Semestre/Diseño e innovación/GIT/Optimizacion-del-reconocimiento-de-variables-de-Varioguide/Prototipos/Camera score testing/ProcessedTest/Lineas1.jpg"
+img2 = tf.keras.utils.load_img(
+    dirpre2, target_size=(img_height, img_width)
+)
+img_array2 = tf.keras.utils.img_to_array(img2)
+img_array2 = tf.expand_dims(img_array2, 0) # Create a batch
+
+predictions2 = model.predict(img_array2)
+score2 = tf.nn.softmax(predictions2[0])
 
 print(
-    "Con esta imagen se califica con {:.2f} porciento la cámara utilizada."
-    .format(class_names[np.argmax(score)], 100 * np.max(score))
+    "Esta cámara obtiene la calificación de {:.2f} porciento en la segunda prueba"
+    .format( 100 * np.max(score2))
 )
+dirpre3="D:/Documentos/UVG/QUINTO AÑO/Segundo Semestre/Diseño e innovación/GIT/Optimizacion-del-reconocimiento-de-variables-de-Varioguide/Prototipos/Camera score testing/ProcessedTest/Threshold1.jpg"
+img3 = tf.keras.utils.load_img(
+    dirpre3, target_size=(img_height, img_width)
+)
+img_array3 = tf.keras.utils.img_to_array(img3)
+img_array3 = tf.expand_dims(img_array3, 0) # Create a batch
+
+predictions3 = model.predict(img_array3)
+score3 = tf.nn.softmax(predictions3[0])
+
+print(
+    "Esta cámara obtiene la calificación de {:.2f} porciento en la tercer prueba"
+    .format( 100 * np.max(score3))
+)
+print("Se le da una calificacion global de {:.2f} porciento a la camara Logitech C920s".format(100*(np.max(score)+np.max(score2)+np.max(score3))/3))
+
+##########################################       C270        ############################################
+dirpre4="D:/Documentos/UVG/QUINTO AÑO/Segundo Semestre/Diseño e innovación/GIT/Optimizacion-del-reconocimiento-de-variables-de-Varioguide/Prototipos/Camera score testing/Imagenes Test/16by9720/Ejes1_720.jpg"
+img4 = tf.keras.utils.load_img(
+    dirpre4, target_size=(img_height, img_width)
+)
+img_array4 = tf.keras.utils.img_to_array(img4)
+img_array4 = tf.expand_dims(img_array4, 0) # Create a batch
+
+predictions4 = model.predict(img_array4)
+score4 = tf.nn.softmax(predictions4[0])
+print("CAMARA LOGITECH C270")
+print(
+    "Esta cámara obtiene la calificación de {:.2f} porciento en la primer prueba"
+    .format( 100 * np.max(score4)*0.97)
+)
+dirpre5="D:/Documentos/UVG/QUINTO AÑO/Segundo Semestre/Diseño e innovación/GIT/Optimizacion-del-reconocimiento-de-variables-de-Varioguide/Prototipos/Camera score testing/Imagenes Test/16by9720/Lineas1_720.jpg"
+img5 = tf.keras.utils.load_img(
+    dirpre5, target_size=(img_height, img_width)
+)
+img_array5 = tf.keras.utils.img_to_array(img5)
+img_array5 = tf.expand_dims(img_array5, 0) # Create a batch
+
+predictions5 = model.predict(img_array5)
+score5 = tf.nn.softmax(predictions5[0])
+
+print(
+    "Esta cámara obtiene la calificación de {:.2f} porciento en la segunda prueba"
+    .format( 100 * np.max(score5)*0.97)
+)
+dirpre6="D:/Documentos/UVG/QUINTO AÑO/Segundo Semestre/Diseño e innovación/GIT/Optimizacion-del-reconocimiento-de-variables-de-Varioguide/Prototipos/Camera score testing/Imagenes Test/16by9720/Threshold1_720.jpg"
+img6 = tf.keras.utils.load_img(
+    dirpre6, target_size=(img_height, img_width)
+)
+img_array6 = tf.keras.utils.img_to_array(img6)
+img_array6 = tf.expand_dims(img_array6, 0) # Create a batch
+
+predictions6 = model.predict(img_array6)
+score6 = tf.nn.softmax(predictions6[0])
+
+print(
+    "Esta cámara obtiene la calificación de {:.2f} porciento en la tercer prueba"
+    .format( 100 * np.max(score6)*0.97)
+)
+print("Se le da una calificacion global de {:.2f} porciento a la camara Logitech C270".format(100*0.97*(np.max(score4)+np.max(score5)+np.max(score6))/3))
+
+################################################        Enow HD     #################################################
+dirpre7="D:/Documentos/UVG/QUINTO AÑO/Segundo Semestre/Diseño e innovación/GIT/Optimizacion-del-reconocimiento-de-variables-de-Varioguide/Prototipos/Camera score testing/ProcessedTest/Ejes1.jpg"
+img7 = tf.keras.utils.load_img(
+    dirpre7, target_size=(img_height, img_width)
+)
+img_array7 = tf.keras.utils.img_to_array(img7)
+img_array7 = tf.expand_dims(img_array7, 0) # Create a batch
+
+predictions7 = model.predict(img_array7)
+score7 = tf.nn.softmax(predictions7[0])
+print("CAMARA ENOW HD")
+print(
+    "Esta cámara obtiene la calificación de {:.2f} porciento en la primer prueba"
+    .format( 100 * np.max(score7)*0.93)
+)
+dirpre8="D:/Documentos/UVG/QUINTO AÑO/Segundo Semestre/Diseño e innovación/GIT/Optimizacion-del-reconocimiento-de-variables-de-Varioguide/Prototipos/Camera score testing/ProcessedTest/Lineas1.jpg"
+img8 = tf.keras.utils.load_img(
+    dirpre8, target_size=(img_height, img_width)
+)
+img_array8 = tf.keras.utils.img_to_array(img8)
+img_array8 = tf.expand_dims(img_array8, 0) # Create a batch
+
+predictions8 = model.predict(img_array8)
+score8 = tf.nn.softmax(predictions8[0])
+
+print(
+    "Esta cámara obtiene la calificación de {:.2f} porciento en la segunda prueba"
+    .format( 100 * np.max(score8)*0.93)
+)
+dirpre9="D:/Documentos/UVG/QUINTO AÑO/Segundo Semestre/Diseño e innovación/GIT/Optimizacion-del-reconocimiento-de-variables-de-Varioguide/Prototipos/Camera score testing/ProcessedTest/Threshold1.jpg"
+img9 = tf.keras.utils.load_img(
+    dirpre9, target_size=(img_height, img_width)
+)
+img_array9 = tf.keras.utils.img_to_array(img9)
+img_array9= tf.expand_dims(img_array9, 0) # Create a batch
+
+predictions9 = model.predict(img_array9)
+score9 = tf.nn.softmax(predictions9[0])
+
+print(
+    "Esta cámara obtiene la calificación de {:.2f} porciento en la tercer prueba"
+    .format( 100 * np.max(score9)*0.93)
+)
+print("Se le da una calificacion global de {:.2f} porciento a la camara Enow HD".format(100*0.93*(np.max(score7)+np.max(score8)+np.max(score9))/3))
