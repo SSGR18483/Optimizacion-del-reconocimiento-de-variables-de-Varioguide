@@ -5,6 +5,8 @@
 # TRABAJO DE GRADUACION
 
 # Prototipo de reconocimiento de variables de la pantalla de HUMANA utilizando KNN
+# Prototipo recolectado de https://git.sr.ht/~vladh/clumsycomputer/tree/main/item/from-scratch-2-ocr
+# Trabajo base de  Clumsy Computer en stream
 
 # Importe de librerias necesarias
 import cv2 as cv
@@ -36,13 +38,14 @@ if DEBUG:
 
 
 # DIRECTORIOS
-DATA_DIR = 'C:/Users/galic/Documents/Diseño/Python/DATA IMAGENES/'
-TEST_DIR = 'test/'
-DATASET = 'fashion-mnist'  # `'mnist'` or `'fashion-mnist'`
-TEST_DATA_FILENAME = DATA_DIR + 't10k-images.idx3-ubyte'
-TEST_LABELS_FILENAME = DATA_DIR + 't10k-labels.idx1-ubyte'
-TRAIN_DATA_FILENAME = DATA_DIR + 'train-images.idx3-ubyte'
-TRAIN_LABELS_FILENAME = DATA_DIR + 'train-labels.idx1-ubyte'
+#DATA_DIR = 'C:/Users/galic/Documents/Diseño/Python/DATA IMAGENES/'
+DATA_DIR = 'D:/Documentos/UVG/QUINTO AÑO/Segundo Semestre/Diseño e innovación/Python/MNIST/'
+TEST_DIR = 'D:/Documentos/UVG/QUINTO AÑO/Segundo Semestre/Diseño e innovación/Python/MNIST/test/'
+DATASET = 'mnist'  # `'mnist'` or `'fashion-mnist'`
+TEST_DATA_FILENAME = DATA_DIR  + DATASET   +'/t10k-images.idx3-ubyte'
+TEST_LABELS_FILENAME = DATA_DIR  + DATASET+'/t10k-labels.idx1-ubyte'
+TRAIN_DATA_FILENAME = DATA_DIR  + DATASET+  '/train-images.idx3-ubyte'
+TRAIN_LABELS_FILENAME = DATA_DIR  + DATASET+'/train-labels.idx1-ubyte'
 
 # Comienzo del programa
 
@@ -136,25 +139,10 @@ def knn(X_train, y_train, X_test, k=3):
     return y_pred
 
 
-def get_garment_from_label(label):
-    return [
-        'T-shirt/top',
-        'Trouser',
-        'Pullover',
-        'Dress',
-        'Coat',
-        'Sandal',
-        'Shirt',
-        'Sneaker',
-        'Bag',
-        'Ankle boot',
-    ][label]
-
-
 def main():
-    n_train = 1000
+    n_train = 2500
     n_test = 10
-    k = 7
+    k = 10
     print(f'Dataset: {DATASET}')
     print(f'n_train: {n_train}')
     print(f'n_test: {n_test}')
@@ -169,8 +157,8 @@ def main():
         for idx, test_sample in enumerate(X_test):
             write_image(test_sample, f'{TEST_DIR}{idx}.png')
         # Load in the `our_test.png` we drew ourselves!
-        # X_test = [read_image(f'{DATA_DIR}our_test.png')]
-        # y_test = [5]
+        X_test = [read_image(f'{DATA_DIR}our_test.png')]
+        y_test = [5]
 
     X_train = extract_features(X_train)
     X_test = extract_features(X_test)
@@ -183,15 +171,7 @@ def main():
         in zip(y_pred, y_test)
     ]) / len(y_test)
 
-    if DATASET == 'fashion-mnist':
-        garments_pred = [
-            get_garment_from_label(label)
-            for label in y_pred
-        ]
-        print(f'Predicted garments: {garments_pred}')
-    else:
-        print(f'Predicted labels: {y_pred}')
-
+    print(f'Predicted labels: {y_pred}')
     print(f'Accuracy: {accuracy * 100}%')
 if __name__ == '__main__':
     main()
