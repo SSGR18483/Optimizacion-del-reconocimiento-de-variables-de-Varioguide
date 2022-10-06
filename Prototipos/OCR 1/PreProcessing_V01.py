@@ -16,9 +16,37 @@ import time
 
 # PreProcesamiento de imagenes para reconocimiento de caracteres:
 
+#Trabajar abriendo un camara
+# Create an object to hold reference to camera video capturing
+def obtenercaptura():
+    vidcap = cv2.VideoCapture(0)
+
+    # check if connection with camera is successfully
+    if vidcap.isOpened():
+        ret, frame = vidcap.read()  # capture a frame from live video
+
+        # check whether frame is successfully captured
+        if ret:
+            print("se pudo capturar el frame")
+        # print error if frame capturing was unsuccessful
+        else:
+            print("Error : no se capturo el frame")
+
+    # print error if the connection with camera is unsuccessful
+    else:
+        print("Cannot open camera")
+    return frame
+
 # abrir una imagen.
-image_file= 'humana1.png'
-img=cv2.imread(image_file)
+# image_file= 'humana1.png' Caso de imagen
+image_file='captura1.jpg'
+CASO=2
+if CASO==1:
+    img=obtenercaptura()
+elif CASO ==2:
+    img=cv2.imread(image_file)
+else:
+    print("no se pudo xd")
 
 # inversion de colores de imagenes
 #tesseract 4.0 no usa esto pero si el 3.0
@@ -29,15 +57,21 @@ def rescale(image,width, height):
     down_points1=(width,height)
     img_resized=cv2.resize(image,down_points1,interpolation=cv2.INTER_LINEAR)
     return img_resized
-imagen_rescalada=rescale(img,1000,600)
+imagen_rescalada=rescale(img,350,600)
 
 # Binarizacion
 def grayscale(image):
     return cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
-gray_img = grayscale(img)
-thresh2 = cv2.threshold(gray_img,110,210,cv2.THRESH_BINARY_INV)[1]
-
+gray_img = grayscale(inverted_image)
+gray_img = cv2.bitwise_not(gray_img)
+#thresh2 = cv2.threshold(gray_img,120,255,cv2.THRESH_TRUNC)[1]
+#thresh2 = cv2.threshold(gray_img,150,180,cv2.THRESH_BINARY_INV)[1]
+#thresh2 = cv2.threshold(gray_img,148,180,cv2.THRESH_BINARY)[1]
+thresh2 = cv2.threshold(gray_img,50,70,cv2.THRESH_BINARY+cv2.THRESH_OTSU)[1]
+#thresh2 =cv2.bitwise_not(thresh2)
 # Noise remooval
+
+
 def noise_removal(image):
     kernel=np.ones((1, 1),np.uint8)
     image = cv2.dilate(image, kernel, iterations=1)
@@ -77,7 +111,7 @@ def getSkewAngle(image) -> float:
         x,y,w,h = rect
         cv2.rectangle(newImage,(x,y),(x+w,y+h),(0,255,0),2)
     largestContour=contours[0]
-    print(len(contours))
+    #print(len(contours))
     minAreaRect = cv2.minAreaRect(largestContour)
     angle = minAreaRect[-1]
     if angle < -45:
@@ -117,13 +151,23 @@ def agregar_borde(image):
     image_extbord = cv2.copyMakeBorder(image, top, bottom, left, right, cv2.BORDER_CONSTANT, value = color)
     return image_extbord
 
-no_noise = noise_removal(thresh2)
-thiner=thin(no_noise)
-thicker =thick(no_noise)
-fixe = deskew(img)
-noboders= quitar_bordes(no_noise)
-addborder= agregar_borde(noboders)
-cv2.imshow("thres",addborder)
+
+
+
+
+
+
+no_noise = noise_removal(thresh2) # imagen sin ruido
+thiner=thin(thresh2) # imagen con letras mas delgadas
+thicker =thick(no_noise) #imagen con letras mas gruesas
+fixe = deskew(img) # imagen rotada
+noboders= quitar_bordes(no_noise) # imagen sin bordes
+addborder= agregar_borde(noboders) # imagen con bordes de 50 pts
+
+ocr_result= pytesseract.image_to_string(no_noise)
+print(ocr_result)
+
+cv2.imshow("Imagen",no_noise)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
 
