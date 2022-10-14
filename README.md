@@ -24,8 +24,7 @@ para poder utilizar los archivos que se describen en este repositorio se necesit
 	* [TkInter](https://www.tutorialspoint.com/how-to-install-tkinter-in-python).
 2. Tesseract
 	* [Tesseract](https://github.com/tesseract-ocr/tesseract).
-3.CUDA(Opcional)
-Este modulo es opcional dado que puede meorar el rendimiento de los algoritmos de machine learning si se tiene el suficiente poder computacional para implementarlos (24GB+)
+3.CUDA(Opcional):  Este modulo es opcional dado que puede meorar el rendimiento de los algoritmos de machine learning si se tiene el suficiente poder computacional para implementarlos (24GB+)
 	* [CUDA](https://developer.nvidia.com/cuda-downloads).
 4.Arduino
 	-[ESP32 Library](https://randomnerdtutorials.com/installing-the-esp32-board-in-arduino-ide-windows-instructions/).
