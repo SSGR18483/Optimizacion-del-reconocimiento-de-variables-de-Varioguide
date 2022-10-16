@@ -1,2 +1,2 @@
 # Trabajo escrito
-En esta carpeta se actualizaran los archivos de trabajo escrito de manera a tener disponible siempre la ultima version del mismo.
+En esta carpeta se contiene el protocolo necesario para el trabajo de graduacion y tambien se contiene un archivo PDF con la version mas actualizada del trabajo escrito de graduación.
