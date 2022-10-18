@@ -12,7 +12,8 @@ import pytesseract
 from matplotlib import pyplot as plt
 import argparse
 import time
-
+import keras_ocr
+import pandas as pd
 
 # PreProcesamiento de imagenes para reconocimiento de caracteres:
 
@@ -168,3 +169,15 @@ cv2.imshow("Imagen",no_noise)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
 
+pipeline = keras_ocr.pipeline.Pipeline()
+image_keras=[no_noise,noboders]#[keras_ocr.tools.read(imga) for imga in [gray_img,img]]
+imageneskeras=np.array(image_keras)
+print(len(imageneskeras))
+results = pipeline.recognize(imageneskeras)
+print(pd.DataFrame(results[0], columns=['text', 'bbox']))
+fig, axs = plt.subplots(nrows=len(imageneskeras), figsize = (20,20))
+for ax, image,predictions in zip(axs,imageneskeras,results):
+    keras_ocr.tools.drawAnnotations(image=image,
+                                    predictions=predictions,
+                                    ax=ax)
+plt.show()
