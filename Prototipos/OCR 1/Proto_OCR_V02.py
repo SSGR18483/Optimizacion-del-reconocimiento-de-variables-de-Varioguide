@@ -40,7 +40,7 @@ def obtenercaptura():
 
 # abrir una imagen.
 # image_file= 'humana1.png' Caso de imagen
-image_file='captura1.jpg'
+image_file='captura4off.jpg'
 CASO=2
 if CASO==1:
     img=obtenercaptura()
@@ -170,7 +170,7 @@ cv2.waitKey(0)
 cv2.destroyAllWindows()
 
 pipeline = keras_ocr.pipeline.Pipeline()
-image_keras=[no_noise,noboders]#[keras_ocr.tools.read(imga) for imga in [gray_img,img]]
+image_keras=[keras_ocr.tools.read(imga) for imga in ['captura4off.jpg', 'captura3.jpg']]
 imageneskeras=np.array(image_keras)
 print(len(imageneskeras))
 results = pipeline.recognize(imageneskeras)
@@ -181,3 +181,4 @@ for ax, image,predictions in zip(axs,imageneskeras,results):
                                     predictions=predictions,
                                     ax=ax)
 plt.show()
+print(pd.DataFrame(results[1], columns=['text', 'bbox']))
