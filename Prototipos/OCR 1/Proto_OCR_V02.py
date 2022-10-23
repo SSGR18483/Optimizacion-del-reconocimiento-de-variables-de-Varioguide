@@ -165,9 +165,9 @@ addborder= agregar_borde(noboders) # imagen con bordes de 50 pts
 ocr_result= pytesseract.image_to_string(no_noise)
 print(ocr_result)
 
-cv2.imshow("Imagen",no_noise)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+# cv2.imshow("Imagen",no_noise)
+# cv2.waitKey(0)
+# cv2.destroyAllWindows()
 
 pipeline = keras_ocr.pipeline.Pipeline()
 image_keras=[keras_ocr.tools.read(imga) for imga in ['captura4off.jpg', 'captura3.jpg']]
