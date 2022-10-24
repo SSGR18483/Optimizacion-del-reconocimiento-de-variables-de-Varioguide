@@ -39,12 +39,13 @@ def obtenercaptura():
 
 # abrir una imagen.
 # image_file= 'humana1.png' Caso de imagen
-image_file='captura1.jpg'
+image_file='captura4off.jpg'
 CASO=2
 if CASO==1:
     img=obtenercaptura()
 elif CASO ==2:
     img=cv2.imread(image_file)
+    img=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
 else:
     print("no se pudo xd")
 
@@ -57,7 +58,7 @@ def rescale(image,width, height):
     down_points1=(width,height)
     img_resized=cv2.resize(image,down_points1,interpolation=cv2.INTER_LINEAR)
     return img_resized
-imagen_rescalada=rescale(img,350,600)
+imagen_rescalada=rescale(img,3840,2160)
 
 # Binarizacion
 def grayscale(image):
@@ -67,7 +68,7 @@ gray_img = cv2.bitwise_not(gray_img)
 #thresh2 = cv2.threshold(gray_img,120,255,cv2.THRESH_TRUNC)[1]
 #thresh2 = cv2.threshold(gray_img,150,180,cv2.THRESH_BINARY_INV)[1]
 #thresh2 = cv2.threshold(gray_img,148,180,cv2.THRESH_BINARY)[1]
-thresh2 = cv2.threshold(gray_img,50,70,cv2.THRESH_BINARY+cv2.THRESH_OTSU)[1]
+thresh2 = cv2.threshold(gray_img,107,510,cv2.THRESH_BINARY+cv2.THRESH_OTSU)[1]
 #thresh2 =cv2.bitwise_not(thresh2)
 # Noise remooval
 
