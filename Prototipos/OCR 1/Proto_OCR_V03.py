@@ -17,6 +17,7 @@ import argparse
 import time
 import keras_ocr
 import pandas as pd
+import re
 
 # PreProcesamiento de imagenes para reconocimiento de caracteres:
 
@@ -54,6 +55,17 @@ elif CASO ==2:
 else:
     print("no se pudo xd")
 
+
+# MANEJO DE DATOS DE LOS SISTEMAS
+def Handdle(String):
+    s=re.findall(r'\b\d+\b',String)
+    if "Joint 1" in String:
+        Joint = 1
+    if "Joint 2" in String:
+        Joint = 2
+    return Joint,Angle
+
+
 # inversion de colores de imagenes
 #tesseract 4.0 no usa esto pero si el 3.0
 def inversion(img):
@@ -87,14 +99,13 @@ def noise_removal(image):
     kernel = np.ones((1, 1),np.uint8)
     image = cv2.erode(image, kernel, iterations=1)
     image = cv2.morphologyEx(image,cv2.MORPH_CLOSE, kernel)
-    image = cv2.GaussianBlur(image,(1,1),0)
     return image
 
 #adelgazando la fuente
 def thin(image):
     image = cv2.bitwise_not(image)
-    kernel = np.ones((2,2),np.uint8)
-    image = cv2.erode(image,kernel,iterations=1)
+    kernel = np.ones((3,3),np.uint8)
+    image = cv2.erode(image,kernel,iterations=2)
     image = cv2.bitwise_not(image)
     return image
 #haciendo mas grande la fuente
@@ -168,9 +179,16 @@ def crop_img(image):#,x,y):#imgnp
     fig0=image[ 250:800,1000:1600,:]
     return fig0
 
+def Blurred(image):
+    image = cv2.GaussianBlur(image,(5,5),0)
+    return image
+
+
+
 #img es la imagen original
 inv_img= inversion(img)
-res_img= rescale(inv_img,width=3840,height=2160)#2x 1080x1920
+blur_img= Blurred(inv_img)
+res_img= rescale(blur_img,width=3840,height=2160)#2x 1080x1920
 gray_img = grayscale(res_img)
 umb_img = umbral(gray_img)
 nonoise_img = noise_removal(umb_img) # imagen sin ruido
@@ -181,7 +199,6 @@ thick_img = thick(nonoise_img) #imagen con letras mas gruesas
 #bor_img= agregar_borde(rot_img) # imagen con bordes de 50 pts
 estado= save_img(nonoise_img,'processed.jpg')
 trim = crop_img(imgnp)
-plt.imshow(trim)
 estado = save_img(trim,'cutted.jpg')
 
 
@@ -214,12 +231,15 @@ print(ocr_result2)
 
 
 # EN IMAGEN RECORTADA
-res_trim= rescale(trim,width=1080,height=1920)#2x 1080x1920
+res_trim= rescale(trim,width=900,height=600)#2x 1080x1920
 gray_trim = grayscale(res_trim)
 umb_trim = umbral(gray_trim)
 nonoise_trim = noise_removal(umb_trim) # imagen sin ruido
-ocr_result3= pytesseract.image_to_string(nonoise_trim)
+thick_trim = thick(nonoise_trim)
+thick_trim = cv2.bitwise_not(thick_trim)
+ocr_result3= pytesseract.image_to_string(thick_trim)
 print(ocr_result3)
-# cv2.imshow("Imagen",no_noise)
-# cv2.waitKey(0)
-# cv2.destroyAllWindows()
+
+cv2.imshow("Imagen",thick_trim)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
