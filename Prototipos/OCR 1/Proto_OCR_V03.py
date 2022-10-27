@@ -58,12 +58,16 @@ else:
 
 # MANEJO DE DATOS DE LOS SISTEMAS
 def Handdle(String):
-    s=re.findall(r'\b\d+\b',String)
-    if "Joint 1" in String:
-        Joint = 1
-    if "Joint 2" in String:
-        Joint = 2
-    return Joint,Angle
+    txt= String.split(" ")
+    if 'Joint' in txt:
+    # s=re.findall(r'\b\d+\b',String)
+    # if "Joint 1" in String:
+    #     Joint = 1
+    # if "Joint 2" in String:
+    #     Joint = 2
+    if 'Joint' not in txt:
+        aftermant = 'No se pudo leer correctamente'
+    return  #Joint,Angle, aftermath
 
 
 # inversion de colores de imagenes
@@ -243,3 +247,4 @@ print(ocr_result3)
 cv2.imshow("Imagen",thick_trim)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
+print(Handdle(ocr_result2))
