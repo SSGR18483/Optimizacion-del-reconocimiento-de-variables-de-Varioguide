@@ -58,16 +58,18 @@ else:
 
 # MANEJO DE DATOS DE LOS SISTEMAS
 def Handdle(String):
-    txt= String.split(" ")
+    txt= String.split(" ")    # s=re.findall(r'\b\d+\b',String)
     if 'Joint' in txt:
-    # s=re.findall(r'\b\d+\b',String)
-    # if "Joint 1" in String:
-    #     Joint = 1
-    # if "Joint 2" in String:
-    #     Joint = 2
+        if '1' in txt:
+            Joint = 1
+        elif '2' in txt:
+            Joint = 2
+        elif '3' in txt:
+            Joint = 3
+        aftermant = 'Se leyó adecuadamente'
     if 'Joint' not in txt:
         aftermant = 'No se pudo leer correctamente'
-    return  #Joint,Angle, aftermath
+    return  Joint,aftermant
 
 
 # inversion de colores de imagenes
@@ -180,7 +182,7 @@ def save_img(image,filename):
     return status
 
 def crop_img(image):#,x,y):#imgnp
-    fig0=image[ 250:800,1000:1600,:]
+    fig0=image[ 350:800,1050:1550,:]
     return fig0
 
 def Blurred(image):
@@ -235,7 +237,7 @@ print(ocr_result2)
 
 
 # EN IMAGEN RECORTADA
-res_trim= rescale(trim,width=900,height=600)#2x 1080x1920
+res_trim= rescale(trim,width=900,height=600)#2x 900*600
 gray_trim = grayscale(res_trim)
 umb_trim = umbral(gray_trim)
 nonoise_trim = noise_removal(umb_trim) # imagen sin ruido
@@ -247,4 +249,6 @@ print(ocr_result3)
 cv2.imshow("Imagen",thick_trim)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
+
 print(Handdle(ocr_result2))
+

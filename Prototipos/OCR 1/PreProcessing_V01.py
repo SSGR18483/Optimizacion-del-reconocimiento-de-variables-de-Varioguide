@@ -1,4 +1,4 @@
-# Universidad del Valle de Guatemala
+#Universidad del Valle de Guatemala
 # Facultad de Ingenieria
 # Departamento de Ingenieria Electronica, Mecatronica y Biomedica
 # Santiago Sebastian Galicia Reyes
@@ -12,9 +12,14 @@ import pytesseract
 from matplotlib import pyplot as plt
 import argparse
 import time
+from skimage import measure
+from imutils import contours
+import argparse
+import imutils
 
 
 # PreProcesamiento de imagenes para reconocimiento de caracteres:
+
 
 #Trabajar abriendo un camara
 # Create an object to hold reference to camera video capturing
@@ -39,54 +44,75 @@ def obtenercaptura():
 
 # abrir una imagen.
 # image_file= 'humana1.png' Caso de imagen
-image_file='captura4off.jpg'
+image_file='captura1.jpg'
+#CASO
 CASO=2
 if CASO==1:
     img=obtenercaptura()
 elif CASO ==2:
     img=cv2.imread(image_file)
-    img=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+    #imgnp = np.array(Image.open(image_file))
 else:
     print("no se pudo xd")
 
+
+# MANEJO DE DATOS DE LOS SISTEMAS
+def Handdle(String):
+    txt= String.split(" ")    # s=re.findall(r'\b\d+\b',String)
+    if 'Joint' in txt:
+        if '1' in txt:
+            Joint = 1
+        elif '2' in txt:
+            Joint = 2
+        elif '3' in txt:
+            Joint = 3
+        aftermant = 'Se leyó adecuadamente'
+    if 'Joint' not in txt:
+        aftermant = 'No se pudo leer correctamente'
+    return  Joint,aftermant
+
+
 # inversion de colores de imagenes
 #tesseract 4.0 no usa esto pero si el 3.0
-inverted_image = cv2.bitwise_not(img)
+def inversion(img):
+    inverted_image = cv2.bitwise_not(img)
+    return inverted_image
 
 # Reescalamiento
 def rescale(image,width, height):
     down_points1=(width,height)
     img_resized=cv2.resize(image,down_points1,interpolation=cv2.INTER_LINEAR)
     return img_resized
-imagen_rescalada=rescale(img,3840,2160)
+imagen_rescalada=rescale(img,350,600)
 
 # Binarizacion
 def grayscale(image):
     return cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
-gray_img = grayscale(inverted_image)
-gray_img = cv2.bitwise_not(gray_img)
-#thresh2 = cv2.threshold(gray_img,120,255,cv2.THRESH_TRUNC)[1]
-#thresh2 = cv2.threshold(gray_img,150,180,cv2.THRESH_BINARY_INV)[1]
-#thresh2 = cv2.threshold(gray_img,148,180,cv2.THRESH_BINARY)[1]
-thresh2 = cv2.threshold(gray_img,107,510,cv2.THRESH_BINARY+cv2.THRESH_OTSU)[1]
-#thresh2 =cv2.bitwise_not(thresh2)
+
+def umbral(image):
+    # threshim = cv2.threshold(gray_img,120,255,cv2.THRESH_TRUNC)[1]
+    threshim = cv2.threshold(gray_img,150,160,cv2.THRESH_BINARY_INV)[1]
+    # threshim = cv2.threshold(gray_img,148,180,cv2.THRESH_BINARY)[1]
+    #threshim = cv2.threshold(image, 107,510, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+    #threshim = cv2.threshold(image, 100, 155, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+    # threshim =cv2.bitwise_not(threshim)
+    return threshim
+
+
 # Noise remooval
-
-
 def noise_removal(image):
     kernel=np.ones((1, 1),np.uint8)
     image = cv2.dilate(image, kernel, iterations=1)
     kernel = np.ones((1, 1),np.uint8)
     image = cv2.erode(image, kernel, iterations=1)
     image = cv2.morphologyEx(image,cv2.MORPH_CLOSE, kernel)
-    image = cv2.GaussianBlur(image,(1,1),0)
     return image
 
 #adelgazando la fuente
 def thin(image):
     image = cv2.bitwise_not(image)
-    kernel = np.ones((2,2),np.uint8)
-    image = cv2.erode(image,kernel,iterations=1)
+    kernel = np.ones((3,3),np.uint8)
+    image = cv2.erode(image,kernel,iterations=2)
     image = cv2.bitwise_not(image)
     return image
 #haciendo mas grande la fuente
@@ -152,23 +178,53 @@ def agregar_borde(image):
     image_extbord = cv2.copyMakeBorder(image, top, bottom, left, right, cv2.BORDER_CONSTANT, value = color)
     return image_extbord
 
+def save_img(image,filename):
+    status = cv2.imwrite(filename,image)
+    return status
+
+def crop_img(image):#,x,y):#imgnp
+    fig0=image[ 350:800,1050:1550,:]
+    return fig0
+
+def Blurred(image):
+    image = cv2.GaussianBlur(image,(5,5),0)
+    return image
+
+def glare_mask(image): #imagen gris
+    #blurred = cv2.GaussianBlur( image, (1,1), 0 )
+    _,thresh_img = cv2.threshold( image, 180, 255, cv2.THRESH_BINARY)
+    thresh_img = cv2.erode( thresh_img, None, iterations=2 )
+    thresh_img  = cv2.dilate( thresh_img, None,iterations=4 )
+    #desarrollar un analisis de componentes conectados en la imagen umbralizada y se hace un la mascara de largos componentes
+    labels = measure.label( thresh_img, background=0)
+    mask = np.zeros( thresh_img.shape, dtype="uint8" )
+    # loop over the unique components
+    for label in np.unique( labels ):
+        # if this is the background label, ignore it
+        if label == 0:
+            continue
+        # otherwise, construct the label mask and count the
+        # number of pixels
+        labelMask = np.zeros( thresh_img.shape, dtype="uint8" )
+        labelMask[labels == label] = 255
+        numPixels = cv2.countNonZero( labelMask )
+        # if the number of pixels in the component is sufficiently
+        # large, then add it to our mask of "large blobs"
+        if numPixels > 300:
+            mask = cv2.add( mask, labelMask )
+    return mask
 
 
 
-
-
-
-no_noise = noise_removal(thresh2) # imagen sin ruido
-thiner=thin(thresh2) # imagen con letras mas delgadas
-thicker =thick(no_noise) #imagen con letras mas gruesas
-fixe = deskew(img) # imagen rotada
-noboders= quitar_bordes(no_noise) # imagen sin bordes
-addborder= agregar_borde(noboders) # imagen con bordes de 50 pts
-
-ocr_result= pytesseract.image_to_string(no_noise)
-print(ocr_result)
-
-cv2.imshow("Imagen",no_noise)
+#probar antiglare
+blur_img= Blurred(img)
+res_img= rescale(blur_img,width=1920,height=1080)#2x 1080x1920
+gray_img = grayscale(res_img)
+glaresed = cv2.inpaint(gray_img , glare_mask(gray_img), 3,cv2.INPAINT_NS)
+nonoise_img = noise_removal(glaresed) # imagen sin ruido
+umb_img = umbral(nonoise_img)
+thin_img = thin(nonoise_img) # imagen con letras mas delgadas
+thick_img = thick(nonoise_img) #imagen con letras mas gruesas
+cv2. imshow('glared',umb_img)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
-
