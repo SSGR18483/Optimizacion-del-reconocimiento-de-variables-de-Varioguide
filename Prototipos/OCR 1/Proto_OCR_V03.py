@@ -237,16 +237,17 @@ print(ocr_result2)
 
 
 # EN IMAGEN RECORTADA
-res_trim= rescale(trim,width=900,height=600)#2x 900*600
+res_trim= rescale(trim,width=1070,height=600)#2x 900*600
 gray_trim = grayscale(res_trim)
 umb_trim = umbral(gray_trim)
 nonoise_trim = noise_removal(umb_trim) # imagen sin ruido
 thick_trim = thick(nonoise_trim)
 thick_trim = cv2.bitwise_not(thick_trim)
-ocr_result3= pytesseract.image_to_string(thick_trim)
+ocr_result3= pytesseract.image_to_string(thick_trim, config='digits')
+print('Digitos detectados:')
 print(ocr_result3)
 
-cv2.imshow("Imagen",thick_trim)
+cv2.imshow("Imagen",nonoise_trim  )
 cv2.waitKey(0)
 cv2.destroyAllWindows()
 
