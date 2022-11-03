@@ -11,6 +11,7 @@ import cv2
 import pytesseract
 from matplotlib import pyplot as plt
 import argparse
+import os
 import time
 from skimage import measure
 from imutils import contours
