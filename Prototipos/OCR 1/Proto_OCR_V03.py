@@ -224,6 +224,7 @@ print(pd.DataFrame(results[1], columns=['text', 'bbox']))
 
 
 #reconocimiento de Caracteres por medio de Tesseract
+
 ocr_result= pytesseract.image_to_string(nonoise_img)
 res_img= rescale(img,width=3840,height=2160)#2x 1080x1920
 gray_img = grayscale(res_img)
@@ -239,15 +240,38 @@ print(ocr_result2)
 # EN IMAGEN RECORTADA
 res_trim= rescale(trim,width=1070,height=600)#2x 900*600
 gray_trim = grayscale(res_trim)
+blur_trim = Blurred(gray_trim)
 umb_trim = umbral(gray_trim)
 nonoise_trim = noise_removal(umb_trim) # imagen sin ruido
 thick_trim = thick(nonoise_trim)
 thick_trim = cv2.bitwise_not(thick_trim)
-ocr_result3= pytesseract.image_to_string(thick_trim, config='digits')
+ocr_result3= pytesseract.image_to_string(thick_trim)#, config='digits') # con configuracion de digits no funciona bien, no lee nada.
 print('Digitos detectados:')
 print(ocr_result3)
 
-cv2.imshow("Imagen",nonoise_img  )
+
+# opciones para resolver la busqueda de punto :
+# 1. aplicar mascara para buscar el punto a ver si esta en misma posicion siempre. ya sea la misma posicion en un lugar de la imagen o en la misma posicion del ovalo de numeros
+# 2. En otro caso buscar el circulo del punto y separar ambos numeros y construir el numero en post procesing
+# 3. forma de busqueda pasada con Canny y transformadas.
+
+# 1. Mascara:
+# el punto en la imagen de la junta 1 esta en X: 1293 Y:500   ; en la junta 2 esta en X1:1302  Y1:288 y X2:1278 Y2:506  en la junta 3 esta en X:1289 Y:506
+# 2.Transformada de Hough.
+rowsc = blur_trim.shape[0]
+circles = cv2.HoughCircles(blur_trim, cv2.HOUGH_GRADIENT, 1, rowsc / 4,param1=200, param2=25,minRadius=0, maxRadius=10)
+if circles is not None:
+    circles = np.uint16(np.around(circles))
+    for i in circles[0, :]:
+        center = (i[0], i[1])
+        # circle center
+        cv2.circle(res_trim, center, 1, (0, 100, 100), 3)
+        # circle outline
+        radius = i[2]
+        cv2.circle(res_trim, center, radius, (255, 150, 255), 3)
+
+
+cv2.imshow("Imagen",res_trim  )
 cv2.waitKey(0)
 cv2.destroyAllWindows()
 
