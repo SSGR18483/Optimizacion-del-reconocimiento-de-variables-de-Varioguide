@@ -247,7 +247,7 @@ ocr_result3= pytesseract.image_to_string(thick_trim, config='digits')
 print('Digitos detectados:')
 print(ocr_result3)
 
-cv2.imshow("Imagen",nonoise_trim  )
+cv2.imshow("Imagen",nonoise_img  )
 cv2.waitKey(0)
 cv2.destroyAllWindows()
 
