@@ -271,9 +271,12 @@ if circles is not None:
         cv2.circle(res_trim, center, radius, (255, 150, 255), 3)
 
 
-cv2.imshow("Imagen",res_trim  )
+edgesC = cv2.Canny(umb_trim,180,150, apertureSize=5)
+cv2.imshow("Imagen",edgesC)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
-
+ocr_result4= pytesseract.image_to_string(edgesC, config='digits')
+print('Digitos detectados:')
+print(ocr_result4)
 print(Handdle(ocr_result2))
 
