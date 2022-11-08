@@ -194,7 +194,7 @@ def Blurred(image):
 #img es la imagen original
 inv_img= inversion(img)
 blur_img= Blurred(inv_img)
-res_img= rescale(blur_img,width=3840,height=2160)#2x 1080x1920
+res_img= rescale(img,width=3840,height=2160)#2x 1080x1920
 gray_img = grayscale(res_img)
 umb_img = umbral(gray_img)
 nonoise_img = noise_removal(umb_img) # imagen sin ruido
@@ -203,7 +203,7 @@ thick_img = thick(nonoise_img) #imagen con letras mas gruesas
 #rot_img = deskew(nonoise_img) # imagen rotada
 #nobor_img = quitar_bordes(rot_img) # imagen sin bordes
 #bor_img= agregar_borde(rot_img) # imagen con bordes de 50 pts
-estado= save_img(nonoise_img,'processed.jpg')
+estado= save_img(res_img,'processed.jpg')
 trim = crop_img(imgnp)
 estado = save_img(trim,'cutted.jpg')
 
@@ -258,17 +258,17 @@ print(ocr_result3)
 # 1. Mascara:
 # el punto en la imagen de la junta 1 esta en X: 1293 Y:500   ; en la junta 2 esta en X1:1302  Y1:288 y X2:1278 Y2:506  en la junta 3 esta en X:1289 Y:506
 # 2.Transformada de Hough.
-rowsc = blur_trim.shape[0]
-circles = cv2.HoughCircles(blur_trim, cv2.HOUGH_GRADIENT, 1, rowsc / 4,param1=200, param2=25,minRadius=0, maxRadius=10)
-if circles is not None:
-    circles = np.uint16(np.around(circles))
-    for i in circles[0, :]:
-        center = (i[0], i[1])
-        # circle center
-        cv2.circle(res_trim, center, 1, (0, 100, 100), 3)
-        # circle outline
-        radius = i[2]
-        cv2.circle(res_trim, center, radius, (255, 150, 255), 3)
+#rowsc = blur_trim.shape[0]
+#circles = cv2.HoughCircles(blur_trim, cv2.HOUGH_GRADIENT, 1, rowsc / 4,param1=200, param2=25,minRadius=0, maxRadius=10)
+#if circles is not None:
+#    circles = np.uint16(np.around(circles))
+#    for i in circles[0, :]:
+#        center = (i[0], i[1])
+#        # circle center
+#        cv2.circle(res_trim, center, 1, (0, 100, 100), 3)
+#        # circle outline
+#        radius = i[2]
+#        cv2.circle(res_trim, center, radius, (255, 150, 255), 3)
 
 
 edgesC = cv2.Canny(umb_trim,180,150, apertureSize=5)
@@ -276,7 +276,39 @@ cv2.imshow("Imagen",edgesC)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
 ocr_result4= pytesseract.image_to_string(edgesC, config='digits')
-print('Digitos detectados:')
+
+print('Digitos detectados con Canny:')
 print(ocr_result4)
 print(Handdle(ocr_result2))
 
+#Upscale
+#https://towardsdatascience.com/deep-learning-based-super-resolution-with-opencv-4fd736678066
+#tutorial tkinter
+#https://www.geeksforgeeks.org/python-tkinter-tutorial/#introduction
+#image procesing ocr
+#https://github.com/schollz/python-ocr/blob/master/process_image.py
+#tesseract options
+#https://muthu.co/all-tesseract-ocr-options/
+#entrenamiento de keras ocr
+#https://colab.research.google.com/drive/1PxxXyH3XaBoTgxKIoC9dKIRo4wUo-QDg#scrollTo=I7SF5VeoLulc
+#SVHN digit detector
+#https://github.com/penny4860/SVHN-deep-digit-detector
+#Digit detector with Mnist
+#https://towardsdatascience.com/build-a-multi-digit-detector-with-keras-and-opencv-b97e3cd3b37
+#Train custom pipeline with keras ocr
+#https://colab.research.google.com/drive/19dGKong-LraUG3wYlJuPCquemJ13NN8R
+#GLARE
+#https://pyimagesearch.com/2016/10/31/detecting-multiple-bright-spots-in-an-image-with-python-and-opencv/
+#https://stackgod.blogspot.com/2021/06/glare-removal-with-inpaintingopencv.html
+#https://rcvaram.medium.com/glare-removal-with-inpainting-opencv-python-95355aa2aa52
+#paper con image segmentation
+#https://openaccess.thecvf.com/content/ICCV2021W/ILDAV/papers/Atienza_Data_Augmentation_for_Scene_Text_Recognition_ICCVW_2021_paper.pdf
+#https://splunktool.com/python-opencv-ocr-image-segmentation
+#paper sobre calidad adecuada de imagenes para ocr
+#https://groups.google.com/g/tesseract-ocr/c/Wdh_JJwnw94/m/24JHDYQbBQAJ
+#mejorar calidad ocr
+#https://tesseract-ocr.github.io/tessdoc/ImproveQuality
+#videos OCR
+#https://www.youtube.com/watch?v=4uWp6dS6_G4&list=PL2VXyKi-KpYuTAZz__9KVl1jQz74bDG7i
+#https://www.youtube.com/watch?v=PY_N1XdFp4w
+#
