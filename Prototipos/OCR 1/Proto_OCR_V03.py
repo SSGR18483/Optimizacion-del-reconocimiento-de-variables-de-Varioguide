@@ -18,6 +18,7 @@ import time
 import keras_ocr
 import pandas as pd
 import re
+from cv2 import dnn_superres
 
 # PreProcesamiento de imagenes para reconocimiento de caracteres:
 
@@ -77,8 +78,17 @@ def Handdle(String):
 def inversion(img):
     inverted_image = cv2.bitwise_not(img)
     return inverted_image
+#Rescale
+def dnnrescale(image,n):
+    sr = dnn_superres.DnnSuperResImpl_create()
+    imagednn =image
+    path = "FSRCNN_x2.pb"
+    sr.readModel(path)
+    sr.setModel("fsrcnn",n)
+    img_dnresized = sr.upsample(imagednn)
+    return img_dnresized
 
-# Reescalamiento
+# Resize
 def rescale(image,width, height):
     down_points1=(width,height)
     img_resized=cv2.resize(image,down_points1,interpolation=cv2.INTER_LINEAR)
@@ -118,7 +128,7 @@ def thin(image):
 def thick(image):
     image = cv2.bitwise_not(image)
     kernel = np.ones((2,2),np.uint8)
-    image = cv2.dilate(image,kernel,iterations=1)
+    image = cv2.dilate(image,kernel,iterations=3)
     image = cv2.bitwise_not(image)
     return image
 
@@ -194,7 +204,7 @@ def Blurred(image):
 #img es la imagen original
 inv_img= inversion(img)
 blur_img= Blurred(inv_img)
-res_img= rescale(img,width=3840,height=2160)#2x 1080x1920
+res_img= dnnrescale(img,2)#2x 1080x1920
 gray_img = grayscale(res_img)
 umb_img = umbral(gray_img)
 nonoise_img = noise_removal(umb_img) # imagen sin ruido
@@ -203,42 +213,28 @@ thick_img = thick(nonoise_img) #imagen con letras mas gruesas
 #rot_img = deskew(nonoise_img) # imagen rotada
 #nobor_img = quitar_bordes(rot_img) # imagen sin bordes
 #bor_img= agregar_borde(rot_img) # imagen con bordes de 50 pts
-estado= save_img(res_img,'processed.jpg')
+estado= save_img(umb_img,'processed.jpg')
 trim = crop_img(imgnp)
 estado = save_img(trim,'cutted.jpg')
 
 
-pipeline = keras_ocr.pipeline.Pipeline()
-image_keras=[keras_ocr.tools.read(imga) for imga in ['processed.jpg', 'cutted.jpg']]
-imageneskeras=np.array(image_keras)
-print(len(imageneskeras))
-results = pipeline.recognize(imageneskeras)
-print(pd.DataFrame(results[0], columns=['text', 'bbox']))
-fig, axs = plt.subplots(nrows=len(imageneskeras), figsize = (20,20))
-for ax, image,predictions in zip(axs,imageneskeras,results):
-    keras_ocr.tools.drawAnnotations(image=image,
-                                    predictions=predictions,
-                                    ax=ax)
-plt.show()
-print(pd.DataFrame(results[1], columns=['text', 'bbox']))
 
 
-#reconocimiento de Caracteres por medio de Tesseract
+# Reconocimiento de Caracteres por medio de Tesseract
 
-ocr_result= pytesseract.image_to_string(nonoise_img)
-res_img= rescale(img,width=3840,height=2160)#2x 1080x1920
+res_img= dnnrescale(img,2)#width=3840,height=2160)#2x 1080x1920
 gray_img = grayscale(res_img)
-umb_img = umbral(gray_img)
+blur_img = Blurred(gray_img)
+umb_img = umbral(blur_img)
 nonoise_img = noise_removal(umb_img) # imagen sin ruido
 thin_img = thin(nonoise_img) # imagen con letras mas delgadas
 thick_img = thick(nonoise_img) #imagen con letras mas gruesas
-ocr_result2= pytesseract.image_to_string(nonoise_img)
+ocr_result= pytesseract.image_to_string(nonoise_img)
 print(ocr_result)
-print(ocr_result2)
 
 
 # EN IMAGEN RECORTADA
-res_trim= rescale(trim,width=1070,height=600)#2x 900*600
+res_trim= dnnrescale(trim,2)#2x 900*600
 gray_trim = grayscale(res_trim)
 blur_trim = Blurred(gray_trim)
 umb_trim = umbral(gray_trim)
@@ -250,7 +246,22 @@ print('Digitos detectados:')
 print(ocr_result3)
 
 
-# opciones para resolver la busqueda de punto :
+# KERAS OCR # por el momento no me es util
+# pipeline = keras_ocr.pipeline.Pipeline()
+# image_keras=[keras_ocr.tools.read(imga) for imga in ['processed.jpg', 'cutted.jpg']]
+# imageneskeras=np.array(image_keras)
+# print(len(imageneskeras))
+# results = pipeline.recognize(imageneskeras)
+# print(pd.DataFrame(results[0], columns=['text', 'bbox']))
+# fig, axs = plt.subplots(nrows=len(imageneskeras), figsize = (20,20))
+# for ax, image,predictions in zip(axs,imageneskeras,results):
+#    keras_ocr.tools.drawAnnotations(image=image,
+#                                    predictions=predictions,
+#                                    ax=ax)
+# plt.show()
+# print(pd.DataFrame(results[1], columns=['text', 'bbox']))
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Opciones para resolver la busqueda de punto : %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # 1. aplicar mascara para buscar el punto a ver si esta en misma posicion siempre. ya sea la misma posicion en un lugar de la imagen o en la misma posicion del ovalo de numeros
 # 2. En otro caso buscar el circulo del punto y separar ambos numeros y construir el numero en post procesing
 # 3. forma de busqueda pasada con Canny y transformadas.
@@ -270,17 +281,30 @@ print(ocr_result3)
 #        radius = i[2]
 #        cv2.circle(res_trim, center, radius, (255, 150, 255), 3)
 
-
-edgesC = cv2.Canny(umb_trim,180,150, apertureSize=5)
-cv2.imshow("Imagen",edgesC)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+# 3. Busqueda con Canny y procesamiento.
+edgesC = cv2.Canny(thick_trim,180,150, apertureSize=5)
 ocr_result4= pytesseract.image_to_string(edgesC, config='digits')
 
 print('Digitos detectados con Canny:')
 print(ocr_result4)
-print(Handdle(ocr_result2))
+print(Handdle(ocr_result))
 
+estado2= save_img(thick_trim,'procesadocann.jpg')
+pipeline = keras_ocr.pipeline.Pipeline()
+image_keras=[keras_ocr.tools.read(imga) for imga in ['procesadocann.jpg', 'cutted.jpg']]
+imageneskeras=np.array(image_keras)
+print(len(imageneskeras))
+results = pipeline.recognize(imageneskeras)
+print(pd.DataFrame(results[0], columns=['text', 'bbox']))
+fig, axs = plt.subplots(nrows=len(imageneskeras), figsize = (20,20))
+for ax, image,predictions in zip(axs,imageneskeras,results):
+   keras_ocr.tools.drawAnnotations(image=image,
+                                   predictions=predictions,
+                                   ax=ax)
+plt.show()
+print(pd.DataFrame(results[1], columns=['text', 'bbox']))
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PAGINAS QUE PUEDEN SER UTILES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #Upscale
 #https://towardsdatascience.com/deep-learning-based-super-resolution-with-opencv-4fd736678066
 #tutorial tkinter
@@ -311,4 +335,6 @@ print(Handdle(ocr_result2))
 #videos OCR
 #https://www.youtube.com/watch?v=4uWp6dS6_G4&list=PL2VXyKi-KpYuTAZz__9KVl1jQz74bDG7i
 #https://www.youtube.com/watch?v=PY_N1XdFp4w
-#
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#MNIST DIGIT DETECTOR
+#https://towardsdatascience.com/build-a-multi-digit-detector-with-keras-and-opencv-b97e3cd3b37
