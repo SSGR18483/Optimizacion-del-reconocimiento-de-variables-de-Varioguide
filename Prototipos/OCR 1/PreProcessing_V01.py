@@ -1,8 +1,10 @@
-#Universidad del Valle de Guatemala
+# Universidad del Valle de Guatemala
 # Facultad de Ingenieria
 # Departamento de Ingenieria Electronica, Mecatronica y Biomedica
 # Santiago Sebastian Galicia Reyes
 # TRABAJO DE GRADUACION
+
+# PROTOTIPE VERSION 03 OPTICAL CHARACTER RECOGNITION
 
 # Librerias
 import numpy as np
@@ -10,17 +12,19 @@ import cv2
 # from imutils.object_detection import non_max_suppression
 import pytesseract
 from matplotlib import pyplot as plt
+from PIL import Image, ImageOps
 import argparse
-import os
 import time
+import keras_ocr
+import pandas as pd
+import re
+from cv2 import dnn_superres
 from skimage import measure
 from imutils import contours
-import argparse
+from skimage.filters import threshold_multiotsu
 import imutils
 
-
 # PreProcesamiento de imagenes para reconocimiento de caracteres:
-
 
 #Trabajar abriendo un camara
 # Create an object to hold reference to camera video capturing
@@ -45,14 +49,14 @@ def obtenercaptura():
 
 # abrir una imagen.
 # image_file= 'humana1.png' Caso de imagen
-image_file='captura1.jpg'
+image_file='captura4off.jpg'
 #CASO
 CASO=2
 if CASO==1:
     img=obtenercaptura()
 elif CASO ==2:
     img=cv2.imread(image_file)
-    #imgnp = np.array(Image.open(image_file))
+    imgnp = np.array(Image.open(image_file))
 else:
     print("no se pudo xd")
 
@@ -78,34 +82,43 @@ def Handdle(String):
 def inversion(img):
     inverted_image = cv2.bitwise_not(img)
     return inverted_image
+#Rescale
+def dnnrescale(image,n):
+    sr = dnn_superres.DnnSuperResImpl_create()
+    imagednn =image
+    path = "FSRCNN_x2.pb"
+    sr.readModel(path)
+    sr.setModel("fsrcnn",n)
+    img_dnresized = sr.upsample(imagednn)
+    return img_dnresized
 
-# Reescalamiento
+# Resize
 def rescale(image,width, height):
     down_points1=(width,height)
     img_resized=cv2.resize(image,down_points1,interpolation=cv2.INTER_LINEAR)
     return img_resized
 imagen_rescalada=rescale(img,350,600)
 
-# Binarizacion
+# Binarización
 def grayscale(image):
     return cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
 
+#Thresholding
 def umbral(image):
     # threshim = cv2.threshold(gray_img,120,255,cv2.THRESH_TRUNC)[1]
-    threshim = cv2.threshold(gray_img,150,160,cv2.THRESH_BINARY_INV)[1]
+    # threshim = cv2.threshold(gray_img,150,180,cv2.THRESH_BINARY_INV)[1]
     # threshim = cv2.threshold(gray_img,148,180,cv2.THRESH_BINARY)[1]
-    #threshim = cv2.threshold(image, 107,510, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
-    #threshim = cv2.threshold(image, 100, 155, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+    threshim = cv2.threshold(image, 107,510, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
     # threshim =cv2.bitwise_not(threshim)
     return threshim
 
 
 # Noise remooval
 def noise_removal(image):
-    kernel=np.ones((1, 1),np.uint8)
-    image = cv2.dilate(image, kernel, iterations=1)
-    kernel = np.ones((1, 1),np.uint8)
-    image = cv2.erode(image, kernel, iterations=1)
+    kernel = np.ones((3, 3),np.uint8)
+    image = cv2.erode(image, kernel, iterations=2)
+    kernel=np.ones((2, 2),np.uint8)
+    image = cv2.dilate(image, kernel, iterations=3)
     image = cv2.morphologyEx(image,cv2.MORPH_CLOSE, kernel)
     return image
 
@@ -120,7 +133,7 @@ def thin(image):
 def thick(image):
     image = cv2.bitwise_not(image)
     kernel = np.ones((2,2),np.uint8)
-    image = cv2.dilate(image,kernel,iterations=1)
+    image = cv2.dilate(image,kernel,iterations=3)
     image = cv2.bitwise_not(image)
     return image
 
@@ -188,8 +201,28 @@ def crop_img(image):#,x,y):#imgnp
     return fig0
 
 def Blurred(image):
-    image = cv2.GaussianBlur(image,(5,5),0)
+    image = cv2.GaussianBlur(image,(3,3),0)
     return image
+
+
+
+#img es la imagen original
+inv_img= inversion(img)
+blur_img= Blurred(inv_img)
+res_img= dnnrescale(img,2)#2x 1080x1920
+gray_img = grayscale(res_img)
+umb_img = umbral(gray_img)
+nonoise_img = noise_removal(umb_img) # imagen sin ruido
+thin_img = thin(nonoise_img) # imagen con letras mas delgadas
+thick_img = thick(nonoise_img) #imagen con letras mas gruesas
+reduced = rescale(thick_img,2560,1440)
+#rot_img = deskew(nonoise_img) # imagen rotada
+#nobor_img = quitar_bordes(rot_img) # imagen sin bordes
+#bor_img= agregar_borde(rot_img) # imagen con bordes de 50 pts
+cv2. imshow('umb',reduced)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
 
 def glare_mask(image): #imagen gris
     #blurred = cv2.GaussianBlur( image, (1,1), 0 )
@@ -218,14 +251,16 @@ def glare_mask(image): #imagen gris
 
 
 #probar antiglare
-blur_img= Blurred(img)
-res_img= rescale(blur_img,width=1920,height=1080)#2x 1080x1920
-gray_img = grayscale(res_img)
-glaresed = cv2.inpaint(gray_img , glare_mask(gray_img), 3,cv2.INPAINT_NS)
-nonoise_img = noise_removal(glaresed) # imagen sin ruido
-umb_img = umbral(nonoise_img)
-thin_img = thin(nonoise_img) # imagen con letras mas delgadas
-thick_img = thick(nonoise_img) #imagen con letras mas gruesas
-cv2. imshow('glared',umb_img)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+# blur_img= Blurred(img)
+# res_img= rescale(blur_img,width=1920,height=1080)#2x 1080x1920
+# gray_img = grayscale(res_img)
+# glaresed = cv2.inpaint(gray_img , glare_mask(gray_img), 3,cv2.INPAINT_NS)
+# nonoise_img = noise_removal(glaresed) # imagen sin ruido
+# umb_img = umbral(nonoise_img)
+# thin_img = thin(nonoise_img) # imagen con letras mas delgadas
+# thick_img = thick(nonoise_img) #imagen con letras mas gruesas
+
+
+# cv2. imshow('glared',umb_img)
+# cv2.waitKey(0)
+# cv2.destroyAllWindows()

@@ -95,10 +95,11 @@ def rescale(image,width, height):
     return img_resized
 imagen_rescalada=rescale(img,350,600)
 
-# Binarizacion
+# Binarización
 def grayscale(image):
     return cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
 
+#Thresholding
 def umbral(image):
     # threshim = cv2.threshold(gray_img,120,255,cv2.THRESH_TRUNC)[1]
     # threshim = cv2.threshold(gray_img,150,180,cv2.THRESH_BINARY_INV)[1]
