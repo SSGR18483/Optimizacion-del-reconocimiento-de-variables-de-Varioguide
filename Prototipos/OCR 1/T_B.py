@@ -20,10 +20,11 @@ from skimage.filters import threshold_multiotsu
 import imutils
 
 
-image_file='captura4off.jpg'
+image_file='captura5off.jpg'
 img = cv2.imread(image_file)
 imgnp = np.array(Image.open(image_file))
+pic = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
 
-while True:
-    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    lower_blue =
+
+
+

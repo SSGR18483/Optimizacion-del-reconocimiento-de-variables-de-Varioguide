@@ -200,6 +200,16 @@ def Blurred(image):
     image = cv2.GaussianBlur(image,(5,5),0)
     return image
 
+def mask_manual(img,modo):
+    pic=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+    if modo == 1:
+        mask1 = cv2.inRange(pic, (41, 41, 35), (49, 51, 76))
+        mask2 = cv2.inRange(pic, (36, 36, 36), (55, 58, 76))
+        mask = cv2.bitwise_or(mask1, mask2)
+    elif modo == 2:
+        mask = cv2.inRange(pic,(39,40,38),(55,57,75))
+    return mask
+
 
 
 #img es la imagen original
