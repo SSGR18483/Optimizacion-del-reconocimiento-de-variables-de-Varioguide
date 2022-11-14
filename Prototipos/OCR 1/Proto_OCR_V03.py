@@ -210,6 +210,10 @@ def mask_manual(img,modo):
         mask = cv2.inRange(pic,(39,40,38),(55,57,75))
     return mask
 
+def adaptUMB(img):
+    dst = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 31, 10)
+    return dst
+
 
 
 #img es la imagen original
