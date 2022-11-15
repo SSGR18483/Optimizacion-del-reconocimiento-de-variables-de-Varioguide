@@ -52,6 +52,7 @@ if CASO==1:
     img=obtenercaptura()
 elif CASO ==2:
     img=cv2.imread(image_file)
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     imgnp = np.array(Image.open(image_file))
 else:
     print("no se pudo xd")
@@ -93,7 +94,7 @@ def rescale(image,width, height):
     down_points1=(width,height)
     img_resized=cv2.resize(image,down_points1,interpolation=cv2.INTER_LINEAR)
     return img_resized
-imagen_rescalada=rescale(img,350,600)
+#imagen_rescalada=rescale(img,350,600)
 
 # Binarización
 def grayscale(image):
@@ -128,7 +129,7 @@ def thin(image):
 #haciendo mas grande la fuente
 def thick(image):
     image = cv2.bitwise_not(image)
-    kernel = np.ones((2,2),np.uint8)
+    kernel = np.ones((4,2),np.uint8)
     image = cv2.dilate(image,kernel,iterations=3)
     image = cv2.bitwise_not(image)
     return image
@@ -192,8 +193,8 @@ def save_img(image,filename):
     status = cv2.imwrite(filename,image)
     return status
 
-def crop_img(image):#,x,y):#imgnp
-    fig0=image[ 350:800,1050:1550,:]
+def crop_img(image,cx,cy):#,x,y):#imgnp
+    fig0=image[ cy-40:cy+40,cx-100:cx+105,:]
     return fig0
 
 def Blurred(image):
@@ -214,9 +215,26 @@ def adaptUMB(img):
     dst = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 31, 10)
     return dst
 
+def dibujo_contornos(picture):
+    imagen = picture
+    blurred = cv2.GaussianBlur(imagen, (5, 5), 0)
+    lower = np.array([39, 40, 38])
+    upper = np.array([55, 57, 75])
+    mask = cv2.inRange(blurred, lower, upper)
+    contours , _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+    for contour in contours:
+        area = cv2.contourArea(contour)
+        if area > 5000:
+            cv2.drawContours(imagen, contour, -1, (0, 255, 0), 3)
+            M = cv2.moments(contour)
+            cx = int(M["m10"]/M["m00"])
+            cy = int(M["m01"]/M["m00"])
+            #cv2.circle(imagen,(cx,cy),7,(255,255,255),-1)
+    return imagen,cx,cy
 
 
 #img es la imagen original
+imagenf,cx,cy=dibujo_contornos(hsv)
 inv_img= inversion(img)
 blur_img= Blurred(inv_img)
 res_img= dnnrescale(img,2)#2x 1080x1920
@@ -229,7 +247,7 @@ thick_img = thick(nonoise_img) #imagen con letras mas gruesas
 #nobor_img = quitar_bordes(rot_img) # imagen sin bordes
 #bor_img= agregar_borde(rot_img) # imagen con bordes de 50 pts
 estado= save_img(umb_img,'processed.jpg')
-trim = crop_img(imgnp)
+trim = crop_img(imgnp,cx,cy)
 estado = save_img(trim,'cutted.jpg')
 
 
@@ -353,3 +371,6 @@ print(pd.DataFrame(results[1], columns=['text', 'bbox']))
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #MNIST DIGIT DETECTOR
 #https://towardsdatascience.com/build-a-multi-digit-detector-with-keras-and-opencv-b97e3cd3b37
+#Digit Detector
+#https://www.youtube.com/watch?v=PHl8NJKpauc
+
