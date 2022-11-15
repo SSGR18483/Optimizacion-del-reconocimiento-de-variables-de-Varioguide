@@ -25,25 +25,28 @@ img = cv2.imread(image_file)
 hsv = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
 
 
-def dibujo_contornos(hsv):
-    blurred = cv2.GaussianBlur(hsv, (5, 5), 0)
+def dibujo_contornos(picture):
+    imagen = picture
+    blurred = cv2.GaussianBlur(imagen, (5, 5), 0)
     lower = np.array([39, 40, 38])
     upper = np.array([55, 57, 75])
     mask = cv2.inRange(blurred, lower, upper)
-    contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
-    # cnts= imutils.grab_contours(contours)
+    contours , _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
     for contour in contours:
         area = cv2.contourArea(contour)
         if area > 5000:
-            cv2.drawContours(hsv, contour, -1, (0, 255, 0), 3)
+            cv2.drawContours(imagen, contour, -1, (0, 255, 0), 3)
             M = cv2.moments(contour)
             cx = int(M["m10"]/M["m00"])
             cy = int(M["m01"]/M["m00"])
-            cv2.circle(hsv,(cx,cy),7,(255,255,255),-1)
-    return hsv,cx,cy
-imagenf=dibujo_contornos(hsv)
+            #cv2.circle(imagen,(cx,cy),7,(255,255,255),-1)
+    return imagen,cx,cy
+imagenf,cx,cy=dibujo_contornos(hsv)
 
-
+def crop_img(image,cx,cy):#,x,y):#imgnp
+    fig0=image[ cy-40:cy+40,cx-100:cx+105,:]
+    return fig0
+imfig=crop_img(hsv,cx,cy)
 #GRaficas
 
 fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(10, 3.5))
@@ -61,7 +64,7 @@ ax[0].axis('off')
 #     ax[1].axvline(thresh, color='r')
 
 # Plotting the Multi Otsu result.
-ax[1].imshow(img, cmap='jet')
+ax[1].imshow(imfig, cmap='jet')
 ax[1].set_title('Mask')
 ax[1].axis('off')
 
