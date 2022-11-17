@@ -201,7 +201,7 @@ def Blurred(image):
     image = cv2.GaussianBlur(image,(5,5),0)
     return image
 
-def mask_manual(img,modo):
+def mask_manual(img,modo): #https://www.youtube.com/watch?v=YRb48EUk6Dk /// https://notebook.community/ricklon/opencvraspberrypi/notebook/openCV%20color%20detection
     pic=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
     if modo == 1:
         mask1 = cv2.inRange(pic, (41, 41, 35), (49, 51, 76))
@@ -209,8 +209,9 @@ def mask_manual(img,modo):
         mask = cv2.bitwise_or(mask1, mask2)
     elif modo == 2:
         mask = cv2.inRange(pic,(39,40,38),(55,57,75))
+    elif modo == 3:
+        mask = cv2.inRange(pic,(38,38,36),(73,73,72))
     return mask
-
 def adaptUMB(img):
     dst = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 31, 10)
     return dst
@@ -219,7 +220,9 @@ def dibujo_contornos(picture):
     imagen = picture
     blurred = cv2.GaussianBlur(imagen, (5, 5), 0)
     lower = np.array([39, 40, 38])
+    #lower = np.array([38,38,36]) en caso sea ultimas fotos
     upper = np.array([55, 57, 75])
+    #upper = np.array([73,73,72]) en caso sea ultimas fotos
     mask = cv2.inRange(blurred, lower, upper)
     contours , _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
     for contour in contours:
@@ -232,6 +235,9 @@ def dibujo_contornos(picture):
             #cv2.circle(imagen,(cx,cy),7,(255,255,255),-1)
     return imagen,cx,cy
 
+def recorte_inicial(image,cx,cy):#,x,y):#imgnp cx es 960 y cy es 540
+    fig0=image[ cy-505:cy+505,cx-660:cx+640,:]
+    return fig0
 
 #img es la imagen original
 imagenf,cx,cy=dibujo_contornos(hsv)
@@ -374,4 +380,8 @@ print(pd.DataFrame(results[1], columns=['text', 'bbox']))
 #https://towardsdatascience.com/build-a-multi-digit-detector-with-keras-and-opencv-b97e3cd3b37
 #Digit Detector
 #https://www.youtube.com/watch?v=PHl8NJKpauc
+#Color spaces
+#https://programmingdesignsystems.com/color/color-models-and-color-spaces/index.html
 
+#imagenes  de HUMANA
+#https://www.karger.com/Article/Pdf/510007
