@@ -20,56 +20,22 @@ from skimage.filters import threshold_multiotsu
 import imutils
 
 
-image_file='captura5off.jpg'
+image_file='cap1long.jpg'
 img = cv2.imread(image_file)
-hsv = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+pic=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
 
-
-def dibujo_contornos(picture):
-    imagen = picture
-    blurred = cv2.GaussianBlur(imagen, (5, 5), 0)
-    lower = np.array([39, 40, 38])
-    upper = np.array([55, 57, 75])
-    mask = cv2.inRange(blurred, lower, upper)
-    contours , _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
-    for contour in contours:
-        area = cv2.contourArea(contour)
-        if area > 5000:
-            cv2.drawContours(imagen, contour, -1, (0, 255, 0), 3)
-            M = cv2.moments(contour)
-            cx = int(M["m10"]/M["m00"])
-            cy = int(M["m01"]/M["m00"])
-            #cv2.circle(imagen,(cx,cy),7,(255,255,255),-1)
-    return imagen,cx,cy
-imagenf,cx,cy=dibujo_contornos(hsv)
-
-def crop_img(image,cx,cy):#,x,y):#imgnp
-    fig0=image[ cy-40:cy+40,cx-100:cx+105,:]
-    return fig0
-imfig=crop_img(hsv,cx,cy)
-#GRaficas
-
-fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(10, 3.5))
-
-# Plotting the original image.
-ax[0].imshow(imagenf)
-ax[0].set_title('Original')
-ax[0].axis('off')
-
-# Plotting the histogram and the two thresholds obtained from
-# # multi-Otsu.
-# ax[1].hist(img.ravel(), bins=255)
-# ax[1].set_title('Histogram')
-# for thresh in thres:
-#     ax[1].axvline(thresh, color='r')
-
-# Plotting the Multi Otsu result.
-ax[1].imshow(imfig, cmap='jet')
-ax[1].set_title('Mask')
-ax[1].axis('off')
-
-plt.subplots_adjust()
+def mask_manual(img,modo):
+    pic=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+    if modo == 1:
+        mask1 = cv2.inRange(pic, (41, 41, 35), (49, 51, 76))
+        mask2 = cv2.inRange(pic, (36, 36, 36), (55, 58, 76))
+        mask = cv2.bitwise_or(mask1, mask2)
+    elif modo == 2:
+        mask = cv2.inRange(pic,(39,40,38),(55,57,75))
+    elif modo == 3:
+        mask = cv2.inRange(pic,(36,38,38),(60,60,70))
+    return mask
+maskar=mask_manual(img,3)
+show= plt.imshow(maskar)
+plt.title('Example',                                    fontweight ="bold")
 plt.show()
-
-
-

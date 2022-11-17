@@ -129,8 +129,8 @@ def thin(image):
 #haciendo mas grande la fuente
 def thick(image):
     image = cv2.bitwise_not(image)
-    kernel = np.ones((4,2),np.uint8)
-    image = cv2.dilate(image,kernel,iterations=3)
+    kernel = np.ones((2,2),np.uint8)
+    image = cv2.dilate(image,kernel,iterations=2)
     image = cv2.bitwise_not(image)
     return image
 
@@ -273,7 +273,8 @@ blur_trim = Blurred(gray_trim)
 umb_trim = umbral(gray_trim)
 nonoise_trim = noise_removal(umb_trim) # imagen sin ruido
 thick_trim = thick(nonoise_trim)
-thick_trim = cv2.bitwise_not(thick_trim)
+thick_trim2 = thick(thick_trim)
+thick_trim = cv2.bitwise_not(thick_trim2)
 ocr_result3= pytesseract.image_to_string(thick_trim)#, config='digits') # con configuracion de digits no funciona bien, no lee nada.
 print('Digitos detectados:')
 print(ocr_result3)
