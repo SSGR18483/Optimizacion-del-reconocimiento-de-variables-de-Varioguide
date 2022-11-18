@@ -249,6 +249,24 @@ def glare_mask(image): #imagen gris
     return mask
 
 
+def contorno_numeros(corte):
+    roi = cv2.cvtColor(corte, cv2.COLOR_BRG2GRAY)
+    blur = cv2.GaussianBlur(roi,(3,3),0)
+    # thresh = cv2.adaptiveThreshold(blur, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 11, 2)
+    thresh = cv2.threshold(image, 107, 510, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+    contours, hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    for c in contours:
+        x, y, w, h = cv2.boundingRect(c)
+        cv2.rectangle(corte, (x, y), (x + w, y + h), color=(0, 255, 0), thickness=2)
+        digit = thresh[y:y + h, x:x + w]
+        resized_digit = cv2.resize(digit, (18, 18))
+        padded_digit = np.pad(resized_digit, ((5, 5), (5, 5)), "constant", constant_values=0)
+        # plt.imshow(padded_digit, cmap="gray")
+        # plt.show()
+        # xdigit = padded_digit.reshape(1, 784)
+        # prediction = neigh.predict(xdigit)
+        # print("prediction = ", prediction[0])
+    return corte
 
 #probar antiglare
 # blur_img= Blurred(img)
