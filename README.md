@@ -28,3 +28,21 @@ para poder utilizar los archivos que se describen en este repositorio se necesit
 	* [CUDA](https://developer.nvidia.com/cuda-downloads).
 4. [Arduino](https://docs.arduino.cc/software/ide-v1/tutorials/Windows)
 	* [ESP32 Library](https://randomnerdtutorials.com/installing-the-esp32-board-in-arduino-ide-windows-instructions/).
+
+## Algoritmo OCR
+Este algoritmo de reconocimiento de caracteres por medio de vision de computadora pretende reconocer los angulos de ajuste desplegados por el sistema de Varioguide en la pantalla del laboratorio de HUMANA Guatemala y de esta manera automatizar el proceso quirurjico de un neurocirujano.
+El sistema de visión por computador cuenta con el comportamiento de forma secuencial. Este algoritmo utiliza la librería de Tesseract para realizar el procedimiento de recolección de caracteres y reconocer que junta es la manejada. Asi mismo el algoritmo procesa las imagenes para de ultimo reconocer una red neuronal que reconozca no tan solo el angulo sino el desplazamiento necesario. 
+En las siguientes imagenes se puede observar el desarrollo del procesamiento de imagenes.
+### Captura original
+![Original](Prototipos/OCR1/captura4off.jpg)
+### Procesamiento
+![Procesada](Prototipos/OCR1/processed.jpg)
+### Recortada
+![recortada](Prototipos/OCR1/cutted.jpg)
+
+## Sistema de soporte de camara Web
+Este sistema de soporte de pantalla fue desarrollado utilizando la herramienta de Autodesk Inventor Professional 2023 y en desarrollo cad se determino de la siguiente manera:
+![CAD](Resultados/Primer_prototipo_de_acople_de_camara.png)
+
+Se utilizo material PLA para la impresion 3d y corte laser con planchas de MDF.
+![Ensamble](Resultados/Ensamble_brazo_mecanico.jpg)
