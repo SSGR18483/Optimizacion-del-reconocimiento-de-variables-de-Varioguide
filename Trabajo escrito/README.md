@@ -1,2 +1,2 @@
 # Trabajo escrito
-En esta carpeta se contiene el protocolo necesario para el trabajo de graduacion y tambien se contiene un archivo PDF con la version mas actualizada del trabajo escrito de graduación.
+En esta carpeta se contiene el protocolo necesario por el departamento de ingeniería de la Universidad del Valle de Guatemala para el trabajo de graduacion y tambien se contiene un archivo PDF con la version mas actualizada del trabajo escrito de graduación. No se incluye el archivo editable del trabajo de graduación dado que el mismo esta siendo desarrollado utilizando la plataforma [Overleaf](https://es.overleaf.com).
