@@ -38,7 +38,7 @@ En las siguientes imagenes se puede observar el desarrollo del procesamiento de 
 ### Procesamiento
 ![Procesada](Prototipos/OCR1/processed.jpg)
 ### Recortada
-![recortada](Prototipos/OCR1/cutted.jpg)
+![Recortada](Prototipos/OCR1/cutted.jpg)
 
 ## Sistema de soporte de camara Web
 Este sistema de soporte de pantalla fue desarrollado utilizando la herramienta de Autodesk Inventor Professional 2023 y en desarrollo cad se determino de la siguiente manera:
