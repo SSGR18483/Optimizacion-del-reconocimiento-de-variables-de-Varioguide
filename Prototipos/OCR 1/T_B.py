@@ -27,8 +27,7 @@ img=cv2.cvtColor(img_color,cv2.COLOR_BGR2GRAY)
 
 #SVHN TEST https://www.kaggle.com/code/yushg123/base-pipeline-for-mnist-98-8-accuracy/notebook
 
-df_trian =
-df_test =
+
 
 
 
