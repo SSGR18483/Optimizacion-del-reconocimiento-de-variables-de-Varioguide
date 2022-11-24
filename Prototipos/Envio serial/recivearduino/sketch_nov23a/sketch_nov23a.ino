@@ -23,8 +23,8 @@
 // VARIABLES
 // ==============================================
 
-const char* ssid = "Santiago's iphone";
-const char* password =  "sindy123";
+const char* ssid = "GaliciaReyes";
+const char* password =  "J26S21P17S29";
 const char* host = "192.168.56.1";
 const uint16_t port = 80;
 WiFiClient client;

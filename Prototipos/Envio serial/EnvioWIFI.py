@@ -47,9 +47,10 @@ def TCPsend(j1,s,No):
         message='Dato invalido'
     except:
         message='No se pudo conectar al cliente'
-    return print(message)
+    return message
 
 j1 = float(1.0)
 s=float(1.0)
 No=float(0.2)
-TCPsend(j1,s,No)
+message = TCPsend(j1,s,No)
+print(message)
