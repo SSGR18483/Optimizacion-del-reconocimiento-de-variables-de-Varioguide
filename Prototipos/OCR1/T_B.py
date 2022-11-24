@@ -70,18 +70,18 @@ x_test = tf.keras.utils.normalize(x_test,axis=1)
 
 model = tf.keras.models.Sequential()
 # model.add(tf.keras.layers.Conv2D(64, (3, 3), activation='relu', kernel_initializer='he_uniform', input_shape=(28, 28, 1)))
-model.add(tf.keras.layers.Flatten(input_shape=(28,28)))
-model.add(tf.keras.layers.Dense(1000, activation ='tanh'))
-model.add(tf.keras.layers.Dense(500, activation ='relu'))
-model.add(tf.keras.layers.Dense(100, activation = 'sigmoid'))
-model.add(tf.keras.layers.Dense(10,activation = 'softmax'))
-epochs = 20
-model.compile(optimizer ='adam', loss='sparse_categorical_crossentropy',metrics= ['accuracy'])
-history=model.fit(x_train, y_train, epochs=epochs,validation_data=(x_test,y_test))
+# model.add(tf.keras.layers.Flatten(input_shape=(28,28)))
+# model.add(tf.keras.layers.Dense(1000, activation ='tanh'))
+# model.add(tf.keras.layers.Dense(500, activation ='relu'))
+# model.add(tf.keras.layers.Dense(100, activation = 'sigmoid'))
+# model.add(tf.keras.layers.Dense(10,activation = 'softmax'))
+# epochs = 20
+# model.compile(optimizer ='adam', loss='sparse_categorical_crossentropy',metrics= ['accuracy'])
+# history=model.fit(x_train, y_train, epochs=epochs,validation_data=(x_test,y_test))
 # model.save('mnist.model')
-# model = tf.keras.models.load_model('mnist.model')
+model = tf.keras.models.load_model('mnist.model')
 
-# loss, accuracy = model.evaluate(x_test, y_test)
+loss, accuracy = model.evaluate(x_test, y_test)
 
 def graf_DNN(history,epochs): #funcion que recibe un model fit con epochs y grafica el desempeño del modelo
     #recomendable utilizar un model.fit con datos de entrenamiento, epochs y los datos de validacion
@@ -116,19 +116,19 @@ def no_proces(imagen): #funcion que recibe imagen y que la regresa en blanco y n
     imagen = np.array([imagen])
     return imagen
 
-image_no=1
-while os.path.isfile(f"digit1{image_no}.png"):
+image_no=5
+while os.path.isfile(f"digit{image_no}.png"):
     try:
-        path = f"digit1{image_no}.png"
+        path = f"digit{image_no}.png"
         img = cv2.imread(path)
         img = no_proces(img)
         # plt.imshow(img[0],cmap=plt.cm.binary)
         # plt.show()
         prediction = model.predict(img)
         # print(f"el numero es probablemente un {np.argmax(prediction)}")
-        if image_no ==1:
+        if image_no ==5:
             digit2 = np.argmax(prediction)
-        elif image_no ==2:
+        elif image_no ==6:
             digit1 =np.argmax(prediction)
         else:
             print("Error")
@@ -141,6 +141,13 @@ digitos= float(digit1+(digit2/10))
 print("````````````````````````````````````````````````````````````````````````")
 print(f"El angulo de arreglo de la junta 1 es:  {digitos}")
 print("........................................................................")
+
+
+
+
+
+
+
 
 
 

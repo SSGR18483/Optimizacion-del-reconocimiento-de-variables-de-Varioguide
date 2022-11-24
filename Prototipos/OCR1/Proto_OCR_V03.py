@@ -19,6 +19,13 @@ import keras_ocr
 import pandas as pd
 import re
 from cv2 import dnn_superres
+import glob
+import tensorflow as tf
+import os
+from skimage.filters import threshold_multiotsu
+from skimage import measure
+from imutils import contours
+
 
 # PreProcesamiento de imagenes para reconocimiento de caracteres:
 
@@ -43,19 +50,7 @@ def obtenercaptura():
         print("Cannot open camera")
     return frame
 
-# abrir una imagen.
-# image_file= 'humana1.png' Caso de imagen
-image_file='captura4off.jpg'
-#CASO
-CASO=2
-if CASO==1:
-    img=obtenercaptura()
-elif CASO ==2:
-    img=cv2.imread(image_file)
-    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    imgnp = np.array(Image.open(image_file))
-else:
-    print("no se pudo xd")
+
 
 
 # MANEJO DE DATOS DE LOS SISTEMAS
@@ -219,16 +214,16 @@ def adaptUMB(img):
 def dibujo_contornos(picture):
     imagen = picture
     blurred = cv2.GaussianBlur(imagen, (5, 5), 0)
-    lower = np.array([39, 40, 38])
-    #lower = np.array([38,38,36]) en caso sea ultimas fotos
-    upper = np.array([55, 57, 75])
-    #upper = np.array([73,73,72]) en caso sea ultimas fotos
+    #lower = np.array([39, 40, 38])
+    lower = np.array([38,38,36])# en caso sea ultimas fotos
+    #upper = np.array([55, 57, 75])
+    upper = np.array([73,73,72]) #en caso sea ultimas fotos
     mask = cv2.inRange(blurred, lower, upper)
     contours , _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
     for contour in contours:
         area = cv2.contourArea(contour)
         if area > 5000:
-            cv2.drawContours(imagen, contour, -1, (0, 255, 0), 3)
+            # cv2.drawContours(imagen, contour, -1, (0, 255, 0), 3)
             M = cv2.moments(contour)
             cx = int(M["m10"]/M["m00"])
             cy = int(M["m01"]/M["m00"])
@@ -242,22 +237,31 @@ def recorte_inicial(image,cx,cy):#,x,y):#imgnp cx es 960 y cy es 540
 def contorno_numeros(corte): # entra imagen normal y sale imagen normal con contornos de numeros.# procurar que sea la imagen cortada.
     roi = cv2.cvtColor(corte, cv2.COLOR_BGR2GRAY)
     blur = cv2.GaussianBlur(roi,(3,3),0)
+    No_dig = 1
     # thresh = cv2.adaptiveThreshold(blur, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 11, 2)
     thresh = cv2.threshold(blur, 107, 510, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     for c in contours:
         x, y, w, h = cv2.boundingRect(c)
-        if (w*h > 150) & (w*h < 600) :
-            cv2.rectangle(corte, (x-2, y-2), (x + w+2, y + h+2), color=(0, 255, 0), thickness=2)
-            digit = thresh[y:y + h, x:x + w]
-            resized_digit = cv2.resize(digit, (18, 18))
-            padded_digit = np.pad(resized_digit, ((5, 5), (5, 5)), "constant", constant_values=0)
-            # plt.imshow(padded_digit, cmap="gray")
-            # plt.show()
-            # xdigit = padded_digit.reshape(1, 784)
-            # prediction = neigh.predict(xdigit)
-            # print("prediction = ", prediction[0])
-    return corte
+        try:
+            if (w*h > 150) & (w*h < 600) :
+                # cv2.rectangle(corte, (x-(2), y-(2)), (x + w+(2), y + h+(2)), color=(0, 255, 0), thickness=2)
+                fig0 = roi[y-2:y+h+2, x-1:x+w+1]
+                fig0 = cv2.cvtColor(fig0, cv2.COLOR_GRAY2RGB)
+                # digit = thresh[y:y + h, x:x + w]
+                # resized_digit = cv2.resize(digit, (18, 18))
+                # plt.imshow(fig0,cmap='gray')
+                # plt.title('Example', fontweight="bold")
+                # plt.show()
+                filename = f"digit{No_dig}.png"
+                status = cv2.imwrite(filename, fig0)
+        except:
+            print(f"Erorr! No. {No_dig}")
+        finally:
+            No_dig +=1
+    return (corte)
+
+
 def keras_dr(ad1):#funcion que recibe la direccion de la imagen guardada o una variable y entrega un string con los digitos analizados de keras.
     pipeline = keras_ocr.pipeline.Pipeline()
     image = [keras_ocr.tools.read(ad1)]
@@ -273,11 +277,67 @@ def keras_dr(ad1):#funcion que recibe la direccion de la imagen guardada o una v
 # print(sfj)
 # print(sfj[0:2]) #[0] es  para el primer digito. [1] es para el decimal.
 
+def no_proces(imagen): #funcion que recibe imagen y que la regresa en blanco y negro con dimensiones de 28x28
+    imagen = cv2.cvtColor(imagen, cv2.COLOR_BGR2GRAY)
+    (thresh, imagen) = cv2.threshold(imagen, 127, 255, cv2.THRESH_BINARY)
+    imagen = cv2.resize(imagen, (28, 28), interpolation=cv2.INTER_LINEAR)
+    imagen = np.array([imagen])
+    return imagen
+
+def graf_DNN(history,epochs): #funcion que recibe un model fit con epochs y grafica el desempeño del modelo
+    #recomendable utilizar un model.fit con datos de entrenamiento, epochs y los datos de validacion
+    acc = history.history['accuracy']
+    val_acc = history.history['val_accuracy']
+
+    loss = history.history['loss']
+    val_loss = history.history['val_loss']
+
+    epochs_range = range(epochs)
+
+    plt.figure(figsize=(8, 8))
+    plt.subplot(1, 2, 1)
+    plt.plot(epochs_range, acc, label='Training Accuracy')
+    plt.plot(epochs_range, val_acc, label='Validation Accuracy')
+    plt.legend(loc='lower right')
+    plt.title('Accuracy de entrenamiento vs validacion')
+
+    plt.subplot(1, 2, 2)
+    plt.plot(epochs_range, loss, label='Training Loss')
+    plt.plot(epochs_range, val_loss, label='Validation Loss')
+    plt.legend(loc='upper right')
+    plt.title('Perdida de entrenamiento y validacion')
+    plt.show()
+    return
+
+#'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+#                                                                                                       ALGORITMO PRINCIPAL
+#...............................................................................................................................................................................................................................
+
+# abrir una imagen.
+# image_file= 'humana1.png' Caso de imagen
+image_file='cap1long.jpg'
+#CASO
+CASO=2
+if CASO==1:
+    img=obtenercaptura()
+elif CASO ==2:
+    img=cv2.imread(image_file)
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    imgnp = np.array(Image.open(image_file))
+else:
+    print("no se pudo xd")
+
+
+
 #img es la imagen original
-imagenf,cx,cy=dibujo_contornos(hsv)
-inv_img= inversion(img)
-blur_img= Blurred(inv_img)
-res_img= dnnrescale(img,2)#2x 1080x1920
+Corte1 = recorte_inicial(img,960,540)
+Cortehsv = recorte_inicial(hsv,960,540)
+imagenf,cx,cy=dibujo_contornos(Cortehsv)
+trim = crop_img(imagenf,cx,cy)
+estado = save_img(trim,'cutted.jpg')
+# inv_img= inversion(Corte1)
+# blur_img= Blurred(inv_img)
+res_img= dnnrescale(Corte1,2)#2x 1080x1920 en realidad seria 1300x1010
 gray_img = grayscale(res_img)
 umb_img = umbral(gray_img)
 nonoise_img = noise_removal(umb_img) # imagen sin ruido
@@ -287,15 +347,13 @@ thick_img = thick(nonoise_img) #imagen con letras mas gruesas
 #nobor_img = quitar_bordes(rot_img) # imagen sin bordes
 #bor_img= agregar_borde(rot_img) # imagen con bordes de 50 pts
 estado= save_img(umb_img,'processed.jpg')
-trim = crop_img(imgnp,cx,cy)
-estado = save_img(trim,'cutted.jpg')
 
-
-
+image_archivo='cutted.jpg'
+img_color_cut = cv2.imread(image_archivo)
+figurita = contorno_numeros(img_color_cut)
 
 # Reconocimiento de Caracteres por medio de Tesseract
-
-res_img= dnnrescale(img,2)#width=3840,height=2160)#2x 1080x1920
+res_img= dnnrescale(Corte1,2)#width=3840,height=2160)#2x 1080x1920
 gray_img = grayscale(res_img)
 blur_img = Blurred(gray_img)
 umb_img = umbral(blur_img)
@@ -304,81 +362,44 @@ thin_img = thin(nonoise_img) # imagen con letras mas delgadas
 thick_img = thick(nonoise_img) #imagen con letras mas gruesas
 ocr_result= pytesseract.image_to_string(nonoise_img)
 print(ocr_result)
+Joints,mensajito = Handdle(ocr_result)
+print("-----------------")
+print(mensajito)
+print(Joints)
 
+mnist = tf.keras.datasets.mnist
+(x_train, y_train), (x_test, y_test) = mnist.load_data()
+xtrain = tf.keras.utils.normalize(x_train, axis =1)
+x_test = tf.keras.utils.normalize(x_test,axis=1)
+model = tf.keras.models.load_model('mnist.model')
 
-# EN IMAGEN RECORTADA
-res_trim= dnnrescale(trim,2)#2x 900*600
-gray_trim = grayscale(res_trim)
-blur_trim = Blurred(gray_trim)
-umb_trim = umbral(gray_trim)
-nonoise_trim = noise_removal(umb_trim) # imagen sin ruido
-thick_trim = thick(nonoise_trim)
-thick_trim2 = thick(thick_trim)
-thick_trim = cv2.bitwise_not(thick_trim2)
-ocr_result3= pytesseract.image_to_string(thick_trim)#, config='digits') # con configuracion de digits no funciona bien, no lee nada.
-print('Digitos detectados:')
-print(ocr_result3)
+image_no=5
+while os.path.isfile(f"digit{image_no}.png"):
+    try:
+        path = f"digit{image_no}.png"
+        img = cv2.imread(path)
+        img = no_proces(img)
+        # plt.imshow(img[0],cmap=plt.cm.binary)
+        # plt.show()
+        prediction = model.predict(img)
+        # print(f"el numero es probablemente un {np.argmax(prediction)}")
+        if image_no ==5:
+            digit2 = np.argmax(prediction)
+        elif image_no ==6:
+            digit1 =np.argmax(prediction)
+        else:
+            print("Error")
+    except:
+        print("Error!")
+    finally:
+        image_no +=1
 
+digitos= float(digit1+(digit2/10))
+print("````````````````````````````````````````````````````````````````````````")
+print(f"{mensajito} el angulo de arreglo de la junta {Joints}  y es:  {digitos}")
+print("........................................................................")
 
-# KERAS OCR # por el momento no me es util
-# pipeline = keras_ocr.pipeline.Pipeline()
-# image_keras=[keras_ocr.tools.read(imga) for imga in ['processed.jpg', 'cutted.jpg']]
-# imageneskeras=np.array(image_keras)
-# print(len(imageneskeras))
-# results = pipeline.recognize(imageneskeras)
-# print(pd.DataFrame(results[0], columns=['text', 'bbox']))
-# fig, axs = plt.subplots(nrows=len(imageneskeras), figsize = (20,20))
-# for ax, image,predictions in zip(axs,imageneskeras,results):
-#    keras_ocr.tools.drawAnnotations(image=image,
-#                                    predictions=predictions,
-#                                    ax=ax)
-# plt.show()
-# print(pd.DataFrame(results[1], columns=['text', 'bbox']))
-
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Opciones para resolver la busqueda de punto : %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# 1. aplicar mascara para buscar el punto a ver si esta en misma posicion siempre. ya sea la misma posicion en un lugar de la imagen o en la misma posicion del ovalo de numeros
-# 2. En otro caso buscar el circulo del punto y separar ambos numeros y construir el numero en post procesing
-# 3. forma de busqueda pasada con Canny y transformadas.
-
-# 1. Mascara:
-# el punto en la imagen de la junta 1 esta en X: 1293 Y:500   ; en la junta 2 esta en X1:1302  Y1:288 y X2:1278 Y2:506  en la junta 3 esta en X:1289 Y:506
-# 2.Transformada de Hough.
-#rowsc = blur_trim.shape[0]
-#circles = cv2.HoughCircles(blur_trim, cv2.HOUGH_GRADIENT, 1, rowsc / 4,param1=200, param2=25,minRadius=0, maxRadius=10)
-#if circles is not None:
-#    circles = np.uint16(np.around(circles))
-#    for i in circles[0, :]:
-#        center = (i[0], i[1])
-#        # circle center
-#        cv2.circle(res_trim, center, 1, (0, 100, 100), 3)
-#        # circle outline
-#        radius = i[2]
-#        cv2.circle(res_trim, center, radius, (255, 150, 255), 3)
-
-# 3. Busqueda con Canny y procesamiento.
-edgesC = cv2.Canny(thick_trim,180,150, apertureSize=5)
-ocr_result4= pytesseract.image_to_string(edgesC, config='digits')
-
-print('Digitos detectados con Canny:')
-print(ocr_result4)
-print(Handdle(ocr_result))
-
-estado2= save_img(thick_trim,'procesadocann.jpg')
-pipeline = keras_ocr.pipeline.Pipeline()
-image_keras=[keras_ocr.tools.read(imga) for imga in ['procesadocann.jpg', 'cutted.jpg']]
-imageneskeras=np.array(image_keras)
-print(len(imageneskeras))
-results = pipeline.recognize(imageneskeras)
-print(pd.DataFrame(results[0], columns=['text', 'bbox']))
-fig, axs = plt.subplots(nrows=len(imageneskeras), figsize = (20,20))
-for ax, image,predictions in zip(axs,imageneskeras,results):
-   keras_ocr.tools.drawAnnotations(image=image,
-                                   predictions=predictions,
-                                   ax=ax)
-plt.show()
-print(pd.DataFrame(results[1], columns=['text', 'bbox']))
-
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PAGINAS QUE PUEDEN SER UTILES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PAGINAS QUE PUEDEN SER UTILES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #Upscale
 #https://towardsdatascience.com/deep-learning-based-super-resolution-with-opencv-4fd736678066
 #tutorial tkinter
@@ -416,6 +437,108 @@ print(pd.DataFrame(results[1], columns=['text', 'bbox']))
 #https://www.youtube.com/watch?v=PHl8NJKpauc
 #Color spaces
 #https://programmingdesignsystems.com/color/color-models-and-color-spaces/index.html
-
+#SVHN TEST https://www.kaggle.com/code/yushg123/base-pipeline-for-mnist-98-8-accuracy/notebook  No sirvio porque necesita la info individual de los pixeles para funcionar
+#MNIST video con keras https://www.youtube.com/watch?v=bte8Er0QhDg
 #imagenes  de HUMANA
 #https://www.karger.com/Article/Pdf/510007
+
+
+
+
+# mnist = tf.keras.datasets.mnist
+# (x_train, y_train), (x_test, y_test) = mnist.load_data()
+#
+# xtrain = tf.keras.utils.normalize(x_train, axis =1)
+# x_test = tf.keras.utils.normalize(x_test,axis=1)
+
+# model = tf.keras.models.Sequential()
+# # model.add(tf.keras.layers.Conv2D(64, (3, 3), activation='relu', kernel_initializer='he_uniform', input_shape=(28, 28, 1)))
+# model.add(tf.keras.layers.Flatten(input_shape=(28,28)))
+# model.add(tf.keras.layers.Dense(1000, activation ='tanh'))
+# model.add(tf.keras.layers.Dense(500, activation ='relu'))
+# model.add(tf.keras.layers.Dense(100, activation = 'sigmoid'))
+# model.add(tf.keras.layers.Dense(10,activation = 'softmax'))
+# epochs = 25
+# model.compile(optimizer =tf.keras.optimizers.Adam(learning_rate=1e-3), loss='sparse_categorical_crossentropy',metrics= ['accuracy'])
+# history=model.fit(x_train, y_train, epochs=epochs,validation_data=(x_test,y_test))
+# model.save('mnist.model')
+# model = tf.keras.models.load_model('mnist.model')
+
+# loss, accuracy = model.evaluate(x_test, y_test)
+
+
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Opciones para resolver la busqueda de punto : %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# 1. aplicar mascara para buscar el punto a ver si esta en misma posicion siempre. ya sea la misma posicion en un lugar de la imagen o en la misma posicion del ovalo de numeros
+# 2. En otro caso buscar el circulo del punto y separar ambos numeros y construir el numero en post procesing
+# 3. forma de busqueda pasada con Canny y transformadas.
+
+# 1. Mascara:
+# el punto en la imagen de la junta 1 esta en X: 1293 Y:500   ; en la junta 2 esta en X1:1302  Y1:288 y X2:1278 Y2:506  en la junta 3 esta en X:1289 Y:506
+# 2.Transformada de Hough.
+#rowsc = blur_trim.shape[0]
+#circles = cv2.HoughCircles(blur_trim, cv2.HOUGH_GRADIENT, 1, rowsc / 4,param1=200, param2=25,minRadius=0, maxRadius=10)
+#if circles is not None:
+#    circles = np.uint16(np.around(circles))
+#    for i in circles[0, :]:
+#        center = (i[0], i[1])
+#        # circle center
+#        cv2.circle(res_trim, center, 1, (0, 100, 100), 3)
+#        # circle outline
+#        radius = i[2]
+#        cv2.circle(res_trim, center, radius, (255, 150, 255), 3)
+
+# 3. Busqueda con Canny y procesamiento.
+# edgesC = cv2.Canny(thick_trim,180,150, apertureSize=5)
+# ocr_result4= pytesseract.image_to_string(edgesC, config='digits')
+#
+# print('Digitos detectados con Canny:')
+# print(ocr_result4)
+# print(Handdle(ocr_result))
+#
+# estado2= save_img(thick_trim,'procesadocann.jpg')
+# pipeline = keras_ocr.pipeline.Pipeline()
+# image_keras=[keras_ocr.tools.read(imga) for imga in ['procesadocann.jpg', 'cutted.jpg']]
+# imageneskeras=np.array(image_keras)
+# print(len(imageneskeras))
+# results = pipeline.recognize(imageneskeras)
+# print(pd.DataFrame(results[0], columns=['text', 'bbox']))
+# fig, axs = plt.subplots(nrows=len(imageneskeras), figsize = (20,20))
+# for ax, image,predictions in zip(axs,imageneskeras,results):
+#    keras_ocr.tools.drawAnnotations(image=image,
+#                                    predictions=predictions,
+#                                    ax=ax)
+# plt.show()
+# print(pd.DataFrame(results[1], columns=['text', 'bbox']))
+
+
+
+
+# KERAS OCR # por el momento no me es util
+# pipeline = keras_ocr.pipeline.Pipeline()
+# image_keras=[keras_ocr.tools.read(imga) for imga in ['processed.jpg', 'cutted.jpg']]
+# imageneskeras=np.array(image_keras)
+# print(len(imageneskeras))
+# results = pipeline.recognize(imageneskeras)
+# print(pd.DataFrame(results[0], columns=['text', 'bbox']))
+# fig, axs = plt.subplots(nrows=len(imageneskeras), figsize = (20,20))
+# for ax, image,predictions in zip(axs,imageneskeras,results):
+#    keras_ocr.tools.drawAnnotations(image=image,
+#                                    predictions=predictions,
+#                                    ax=ax)
+# plt.show()
+# print(pd.DataFrame(results[1], columns=['text', 'bbox']))
+
+
+# # EN IMAGEN RECORTADA
+# res_trim= dnnrescale(trim,2)#2x 900*600
+# gray_trim = grayscale(res_trim)
+# blur_trim = Blurred(gray_trim)
+# umb_trim = umbral(gray_trim)
+# nonoise_trim = noise_removal(umb_trim) # imagen sin ruido
+# thick_trim = thick(nonoise_trim)
+# thick_trim2 = thick(thick_trim)
+# thick_trim = cv2.bitwise_not(thick_trim2)
+# ocr_result3= pytesseract.image_to_string(thick_trim)#, config='digits') # con configuracion de digits no funciona bien, no lee nada.
+# print('Digitos detectados:')
+# print(ocr_result3)
