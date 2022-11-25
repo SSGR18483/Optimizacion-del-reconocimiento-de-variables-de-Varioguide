@@ -28,26 +28,33 @@ img=cv2.cvtColor(img_color,cv2.COLOR_BGR2GRAY)
 
 #SVHN TEST https://www.kaggle.com/code/yushg123/base-pipeline-for-mnist-98-8-accuracy/notebook  No sirvio porque necesita la info individual de los pixeles para funcionar
 #MNIST video con keras https://www.youtube.com/watch?v=bte8Er0QhDg
-
+def save_img(image,filename):
+    status = cv2.imwrite(filename,image)
+    return status
 def contorno_numeros(corte): # entra imagen normal y sale imagen normal con contornos de numeros.# procurar que sea la imagen cortada.
     roi = cv2.cvtColor(corte, cv2.COLOR_BGR2GRAY)
     blur = cv2.GaussianBlur(roi,(3,3),0)
     No_dig = 1
     # thresh = cv2.adaptiveThreshold(blur, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 11, 2)
     thresh = cv2.threshold(blur, 107, 510, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+    kernel = np.ones((3, 4), np.uint8)
+    thresh = cv2.erode(thresh, kernel, iterations=1)
+    plt.imshow(thresh, cmap='gray')
+    plt.title('Example', fontweight="bold")
+    plt.show()
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     for c in contours:
         x, y, w, h = cv2.boundingRect(c)
         try:
             if (w*h > 150) & (w*h < 600) :
                 # cv2.rectangle(corte, (x-(2), y-(2)), (x + w+(2), y + h+(2)), color=(0, 255, 0), thickness=2)
-                fig0 = roi[y-2:y+h+2, x-1:x+w+2]
+                fig0 = thresh[y-2:y+h+2, x-1:x+w+2]
                 fig0 = cv2.cvtColor(fig0, cv2.COLOR_GRAY2RGB)
+                plt.imshow(fig0,cmap='gray')
+                plt.title('Example', fontweight="bold")
+                plt.show()
                 # digit = thresh[y:y + h, x:x + w]
                 # resized_digit = cv2.resize(digit, (18, 18))
-                # plt.imshow(fig0,cmap='gray')
-                # plt.title('Example', fontweight="bold")
-                # plt.show()
                 filename = f"digit{No_dig}.png"
                 status = cv2.imwrite(filename, fig0)
         except:
@@ -68,18 +75,18 @@ mnist = tf.keras.datasets.mnist
 xtrain = tf.keras.utils.normalize(x_train, axis =1)
 x_test = tf.keras.utils.normalize(x_test,axis=1)
 
-model = tf.keras.models.Sequential()
-# model.add(tf.keras.layers.Conv2D(64, (3, 3), activation='relu', kernel_initializer='he_uniform', input_shape=(28, 28, 1)))
+# model = tf.keras.models.Sequential()
+# # model.add(tf.keras.layers.Conv2D(64, (3, 3), activation='relu', kernel_initializer='he_uniform', input_shape=(28, 28, 1)))
 # model.add(tf.keras.layers.Flatten(input_shape=(28,28)))
 # model.add(tf.keras.layers.Dense(1000, activation ='tanh'))
 # model.add(tf.keras.layers.Dense(500, activation ='relu'))
 # model.add(tf.keras.layers.Dense(100, activation = 'sigmoid'))
 # model.add(tf.keras.layers.Dense(10,activation = 'softmax'))
-# epochs = 20
+# epochs = 25
 # model.compile(optimizer ='adam', loss='sparse_categorical_crossentropy',metrics= ['accuracy'])
 # history=model.fit(x_train, y_train, epochs=epochs,validation_data=(x_test,y_test))
-# model.save('mnist.model')
-model = tf.keras.models.load_model('mnist.model')
+# model.save('mnist_model')
+model = tf.keras.models.load_model('mnist_model')
 
 loss, accuracy = model.evaluate(x_test, y_test)
 
@@ -116,7 +123,9 @@ def no_proces(imagen): #funcion que recibe imagen y que la regresa en blanco y n
     imagen = np.array([imagen])
     return imagen
 
-image_no=5
+image_no=3
+digit1=0
+digit2=0
 while os.path.isfile(f"digit{image_no}.png"):
     try:
         path = f"digit{image_no}.png"
@@ -126,9 +135,9 @@ while os.path.isfile(f"digit{image_no}.png"):
         # plt.show()
         prediction = model.predict(img)
         # print(f"el numero es probablemente un {np.argmax(prediction)}")
-        if image_no ==5:
+        if image_no ==3:
             digit2 = np.argmax(prediction)
-        elif image_no ==6:
+        elif image_no ==4:
             digit1 =np.argmax(prediction)
         else:
             print("Error")

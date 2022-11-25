@@ -33,7 +33,12 @@ from imutils import contours
 # Create an object to hold reference to camera video capturing
 def obtenercaptura():
     vidcap = cv2.VideoCapture(0)
-
+    vidcap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+    vidcap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+    vidcap.set(28, 30)
+    widthc = vidcap.get(cv2.CAP_PROP_FRAME_WIDTH)
+    heightc = vidcap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+    print(widthc, heightc)
     # check if connection with camera is successfully
     if vidcap.isOpened():
         ret, frame = vidcap.read()  # capture a frame from live video
@@ -56,7 +61,7 @@ def obtenercaptura():
 # MANEJO DE DATOS DE LOS SISTEMAS
 def Handdle(String):
     txt= String.split(" ")    # s=re.findall(r'\b\d+\b',String)
-    if 'Joint' in txt:
+    if 'Joint' or 'oint'in txt:
         if '1' in txt:
             Joint = 1
         elif '2' in txt:
@@ -64,7 +69,8 @@ def Handdle(String):
         elif '3' in txt:
             Joint = 3
         aftermant = 'Se leyó adecuadamente'
-    if 'Joint' not in txt:
+    if 'Joint' or 'oint' not in txt:
+        Joint = 0;
         aftermant = 'No se pudo leer correctamente'
     return  Joint,aftermant
 
@@ -215,9 +221,11 @@ def dibujo_contornos(picture):
     imagen = picture
     blurred = cv2.GaussianBlur(imagen, (5, 5), 0)
     #lower = np.array([39, 40, 38])
-    lower = np.array([38,38,36])# en caso sea ultimas fotos
+    # lower = np.array([38,38,36])# en caso sea ultimas fotos
+    lower = np.array([45, 50, 49])  # en caso sea live
     #upper = np.array([55, 57, 75])
-    upper = np.array([73,73,72]) #en caso sea ultimas fotos
+    # upper = np.array([73,73,72]) #en caso sea ultimas fotos
+    upper = np.array([56, 63, 72])  # en caso sea live
     mask = cv2.inRange(blurred, lower, upper)
     contours , _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
     for contour in contours:
@@ -231,7 +239,9 @@ def dibujo_contornos(picture):
     return imagen,cx,cy
 
 def recorte_inicial(image,cx,cy):#,x,y):#imgnp cx es 960 y cy es 540
-    fig0=image[ cy-505:cy+505,cx-660:cx+640,:]
+    fig0=image[ cy-505:cy+505,cx-665:cx+640,:]
+    # fig0 = image[cy - 485:cy + 485, cx - 660:cx + 631, :]
+    # fig0 = image[cy - 456:cy + 456, cx - 577:cx + 577, :]
     return fig0
 
 def contorno_numeros(corte): # entra imagen normal y sale imagen normal con contornos de numeros.# procurar que sea la imagen cortada.
@@ -240,14 +250,22 @@ def contorno_numeros(corte): # entra imagen normal y sale imagen normal con cont
     No_dig = 1
     # thresh = cv2.adaptiveThreshold(blur, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 11, 2)
     thresh = cv2.threshold(blur, 107, 510, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+    kernel = np.ones((3, 4), np.uint8)
+    thresh = cv2.erode(thresh, kernel, iterations=1)
+    plt.imshow(thresh, cmap='gray')
+    plt.title('Example', fontweight="bold")
+    plt.show()
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     for c in contours:
         x, y, w, h = cv2.boundingRect(c)
         try:
             if (w*h > 150) & (w*h < 600) :
                 # cv2.rectangle(corte, (x-(2), y-(2)), (x + w+(2), y + h+(2)), color=(0, 255, 0), thickness=2)
-                fig0 = roi[y-2:y+h+2, x-1:x+w+1]
+                fig0 = thresh[y-2:y+h+2, x-1:x+w+2]
                 fig0 = cv2.cvtColor(fig0, cv2.COLOR_GRAY2RGB)
+                plt.imshow(fig0, cmap='gray')
+                plt.title('Example', fontweight="bold")
+                plt.show()
                 # digit = thresh[y:y + h, x:x + w]
                 # resized_digit = cv2.resize(digit, (18, 18))
                 # plt.imshow(fig0,cmap='gray')
@@ -317,22 +335,25 @@ def graf_DNN(history,epochs): #funcion que recibe un model fit con epochs y graf
 # image_file= 'humana1.png' Caso de imagen
 image_file='cap1long.jpg'
 #CASO
-CASO=2
+CASO=1
 if CASO==1:
     img=obtenercaptura()
 elif CASO ==2:
     img=cv2.imread(image_file)
-    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     imgnp = np.array(Image.open(image_file))
 else:
     print("no se pudo xd")
-
-
+img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+hsv = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+plt.imshow(img,cmap=plt.cm.binary)
+plt.show()
+estado = save_img(img,'normal.jpg')
 
 #img es la imagen original
 Corte1 = recorte_inicial(img,960,540)
-Cortehsv = recorte_inicial(hsv,960,540)
-imagenf,cx,cy=dibujo_contornos(Cortehsv)
+estado = save_img(Corte1,'corteini.jpg')
+imagenf,cx,cy=dibujo_contornos(Corte1)
+plt.imshow(imagenf)
 trim = crop_img(imagenf,cx,cy)
 estado = save_img(trim,'cutted.jpg')
 # inv_img= inversion(Corte1)
@@ -369,11 +390,23 @@ print(Joints)
 
 mnist = tf.keras.datasets.mnist
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
+
 xtrain = tf.keras.utils.normalize(x_train, axis =1)
 x_test = tf.keras.utils.normalize(x_test,axis=1)
-model = tf.keras.models.load_model('mnist.model')
 
-image_no=5
+# model = tf.keras.models.Sequential()
+# # model.add(tf.keras.layers.Conv2D(64, (3, 3), activation='relu', kernel_initializer='he_uniform', input_shape=(28, 28, 1)))
+# model.add(tf.keras.layers.Flatten(input_shape=(28,28)))
+# model.add(tf.keras.layers.Dense(1000, activation ='tanh'))
+# model.add(tf.keras.layers.Dense(500, activation ='relu'))
+# model.add(tf.keras.layers.Dense(100, activation = 'sigmoid'))
+# model.add(tf.keras.layers.Dense(10,activation = 'softmax'))
+# epochs = 25
+# model.compile(optimizer =tf.keras.optimizers.Adam(learning_rate=1e-3), loss='sparse_categorical_crossentropy',metrics= ['accuracy'])
+# history=model.fit(x_train, y_train, epochs=epochs,validation_data=(x_test,y_test))
+# model.save('mnist.model')
+model = tf.keras.models.load_model('mnist_model')
+image_no=3
 while os.path.isfile(f"digit{image_no}.png"):
     try:
         path = f"digit{image_no}.png"
@@ -383,9 +416,9 @@ while os.path.isfile(f"digit{image_no}.png"):
         # plt.show()
         prediction = model.predict(img)
         # print(f"el numero es probablemente un {np.argmax(prediction)}")
-        if image_no ==5:
+        if image_no ==3:
             digit2 = np.argmax(prediction)
-        elif image_no ==6:
+        elif image_no ==4:
             digit1 =np.argmax(prediction)
         else:
             print("Error")
