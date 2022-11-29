@@ -33,7 +33,8 @@ def TCPsend(j1,s,No):
         HOST = "192.168.0.1"# Ip en network
         PORT = 80# Puerto al que se envia
         sock.connect((HOST, PORT))
-        mensaje = "{"+f"J1:{j1}, S:{s}, No: {No}"+"}"
+        #mensaje = {"data":[j1,s,No]}#J1,S,NO:
+        mensaje ="{data: [" + f"{j1}" + "," + f"{s}" + "," + f"{No}" + "]}"
         mensaje = mensaje.encode("ascii")#se configura en ascci
         sock.send(mensaje)#manda el mensaje
         data = ""

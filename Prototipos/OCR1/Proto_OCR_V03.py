@@ -219,19 +219,21 @@ def adaptUMB(img):
 
 def dibujo_contornos(picture):
     imagen = picture
+    # guardar =picture
     blurred = cv2.GaussianBlur(imagen, (5, 5), 0)
     #lower = np.array([39, 40, 38])
-    # lower = np.array([38,38,36])# en caso sea ultimas fotos
-    lower = np.array([45, 50, 49])  # en caso sea live
+    lower = np.array([38,38,36])# en caso sea ultimas fotos
+    # lower = np.array([45, 50, 49])  # en caso sea live
     #upper = np.array([55, 57, 75])
-    # upper = np.array([73,73,72]) #en caso sea ultimas fotos
-    upper = np.array([56, 63, 72])  # en caso sea live
+    upper = np.array([73,73,72]) #en caso sea ultimas fotos
+    # upper = np.array([56, 63, 72])  # en caso sea live
     mask = cv2.inRange(blurred, lower, upper)
     contours , _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
     for contour in contours:
         area = cv2.contourArea(contour)
         if area > 5000:
-            # cv2.drawContours(imagen, contour, -1, (0, 255, 0), 3)
+            # cv2.drawContours(guardar, contour, -1, (0, 255, 0), 3)
+            # estado = cv2.imwrite('Primercontorno.jpg', cv2.cvtColor(guardar,cv2.COLOR_RGB2BGR))
             M = cv2.moments(contour)
             cx = int(M["m10"]/M["m00"])
             cy = int(M["m01"]/M["m00"])
@@ -250,18 +252,16 @@ def contorno_numeros(corte): # entra imagen normal y sale imagen normal con cont
     No_dig = 1
     # thresh = cv2.adaptiveThreshold(blur, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 11, 2)
     thresh = cv2.threshold(blur, 107, 510, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
-    kernel = np.ones((3, 4), np.uint8)
-    thresh = cv2.erode(thresh, kernel, iterations=1)
-    plt.imshow(thresh, cmap='gray')
-    plt.title('Example', fontweight="bold")
-    plt.show()
+    # kernel = np.ones((3, 4), np.uint8)
+    # thresh = cv2.erode(thresh, kernel, iterations=1)
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     for c in contours:
         x, y, w, h = cv2.boundingRect(c)
         try:
             if (w*h > 150) & (w*h < 600) :
-                # cv2.rectangle(corte, (x-(2), y-(2)), (x + w+(2), y + h+(2)), color=(0, 255, 0), thickness=2)
-                fig0 = thresh[y-2:y+h+2, x-1:x+w+2]
+                # cv2.rectangle(corteguardar, (x-(2), y-(2)), (x + w+(2), y + h+(2)), color=(0, 255, 0), thickness=2)
+                # estado = cv2.imwrite('contornosnum.jpg', corteguardar)
+                fig0 = roi[y-2:y+h+2, x-1:x+w+2]
                 fig0 = cv2.cvtColor(fig0, cv2.COLOR_GRAY2RGB)
                 plt.imshow(fig0, cmap='gray')
                 plt.title('Example', fontweight="bold")
@@ -335,7 +335,7 @@ def graf_DNN(history,epochs): #funcion que recibe un model fit con epochs y graf
 # image_file= 'humana1.png' Caso de imagen
 image_file='cap1long.jpg'
 #CASO
-CASO=1
+CASO=2
 if CASO==1:
     img=obtenercaptura()
 elif CASO ==2:
@@ -347,11 +347,11 @@ img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 hsv = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 plt.imshow(img,cmap=plt.cm.binary)
 plt.show()
-estado = save_img(img,'normal.jpg')
+# estado = save_img(img,'normal.jpg')
 
 #img es la imagen original
 Corte1 = recorte_inicial(img,960,540)
-estado = save_img(Corte1,'corteini.jpg')
+# status = cv2.imwrite('corteini.jpg',cv2.cvtColor(Corte1, cv2.COLOR_RGB2BGR))
 imagenf,cx,cy=dibujo_contornos(Corte1)
 plt.imshow(imagenf)
 trim = crop_img(imagenf,cx,cy)
@@ -401,12 +401,14 @@ x_test = tf.keras.utils.normalize(x_test,axis=1)
 # model.add(tf.keras.layers.Dense(500, activation ='relu'))
 # model.add(tf.keras.layers.Dense(100, activation = 'sigmoid'))
 # model.add(tf.keras.layers.Dense(10,activation = 'softmax'))
-# epochs = 25
+# epochs = 40
 # model.compile(optimizer =tf.keras.optimizers.Adam(learning_rate=1e-3), loss='sparse_categorical_crossentropy',metrics= ['accuracy'])
 # history=model.fit(x_train, y_train, epochs=epochs,validation_data=(x_test,y_test))
 # model.save('mnist.model')
-model = tf.keras.models.load_model('mnist_model')
-image_no=3
+# graf_DNN(history,epochs)
+
+model = tf.keras.models.load_model('mnist.model')
+image_no=5
 while os.path.isfile(f"digit{image_no}.png"):
     try:
         path = f"digit{image_no}.png"
@@ -416,9 +418,9 @@ while os.path.isfile(f"digit{image_no}.png"):
         # plt.show()
         prediction = model.predict(img)
         # print(f"el numero es probablemente un {np.argmax(prediction)}")
-        if image_no ==3:
+        if image_no <=5:
             digit2 = np.argmax(prediction)
-        elif image_no ==4:
+        elif image_no >=6:
             digit1 =np.argmax(prediction)
         else:
             print("Error")
@@ -429,7 +431,8 @@ while os.path.isfile(f"digit{image_no}.png"):
 
 digitos= float(digit1+(digit2/10))
 print("````````````````````````````````````````````````````````````````````````")
-print(f"{mensajito} el angulo de arreglo de la junta {Joints}  y es:  {digitos}")
+# print(f"{mensajito} el angulo de arreglo de la junta {Joints}  y es:  {digitos}")
+print(f"Se leyó adecuadamente el ángulo de arreglo de la junta 1  y es:  {digitos}")
 print("........................................................................")
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PAGINAS QUE PUEDEN SER UTILES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -474,7 +477,8 @@ print("........................................................................"
 #MNIST video con keras https://www.youtube.com/watch?v=bte8Er0QhDg
 #imagenes  de HUMANA
 #https://www.karger.com/Article/Pdf/510007
-
+#COSAS LOGITECHC920
+#https://www.kurokesu.com/main/2016/01/16/manual-usb-camera-settings-in-linux/
 
 
 
