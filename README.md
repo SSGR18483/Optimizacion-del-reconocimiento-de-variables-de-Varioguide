@@ -29,6 +29,9 @@ para poder utilizar los archivos que se describen en este repositorio se necesit
 4. [Arduino](https://docs.arduino.cc/software/ide-v1/tutorials/Windows)
 	* [ESP32 Library](https://randomnerdtutorials.com/installing-the-esp32-board-in-arduino-ide-windows-instructions/).
 	* [ArduinoJSON Library](https://arduinojson.org/).
+4. Autodesk Inventor
+	* [Autodesk Inventor Profesional 2023](https://www.autodesk.com/support/download-install/individuals/configure-install/install-your-product).
+	* [Autodesk Fusion 360](https://www.autodesk.com/products/fusion-360/blog/how-to-install-autodesk-fusion-360-windows-mac/).
 
 ## Algoritmo OCR
 Este algoritmo de reconocimiento de caracteres por medio de vision de computadora pretende reconocer los angulos de ajuste desplegados por el sistema de Varioguide en la pantalla del laboratorio de HUMANA Guatemala y de esta manera automatizar el proceso quirurjico de un neurocirujano.
@@ -45,8 +48,10 @@ En las siguientes imagenes se puede observar el desarrollo del procesamiento de 
 
 
 ## Sistema de soporte de camara Web
-Este sistema de soporte de pantalla fue desarrollado utilizando la herramienta de Autodesk Inventor Professional 2023 y en desarrollo cad se determino de la siguiente manera:
-![CAD](Resultados/Primer_prototipo_de_acople_de_camara.png)
+Este sistema de soporte de pantalla fue desarrollado utilizando la herramienta de Autodesk Inventor Professional 2023 y en desarrollo CAD se determino el siguiente prototipo, el cual puede soportar hasta 16Kg antes de la fractura de sus componentes. Para ver y replicar los archivos 3D dirigirse a la carpeta CAD en el repositorio de [Google Drive](https://drive.google.com/drive/folders/1RPtuFDLAzQxeFY3Tzz4o4T5q7xQjW3tY?usp=sharing).
 
-Se utilizo material PLA para la impresion 3d y corte laser con planchas de MDF.
+![CAD](Resultados/Ensamble_brazo_final.jpg)
+
+Para su manufactura se utilizo material PLA para la impresion 3d y corte laser con planchas de MDF y como uniones se utilizaron tornillos hexagonales m4 y tornillos hexagonales ordinarios de 1/4 in.
 ![Ensamble](Resultados/Ensamble_brazo_mecanico.jpg)
+
