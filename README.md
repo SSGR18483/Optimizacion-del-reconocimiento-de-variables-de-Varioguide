@@ -39,9 +39,9 @@ En las siguientes imagenes se puede observar el desarrollo del procesamiento de 
 ### Procesamiento
 ![Procesada](Prototipos/OCR1/processed.jpg)
 ### Recortada
-![Recortada](Prototipos/ceroprocesado.jpg)
+![Recortada](Prototipos/OCR1/cutted.jpg)
 ### digito recortado y procesado
-![Digito](Resultados/OCR1/cutted.png)
+![Digito](Resultados/ceroprocesado.png)
 
 
 ## Sistema de soporte de camara Web
