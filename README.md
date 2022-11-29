@@ -28,6 +28,7 @@ para poder utilizar los archivos que se describen en este repositorio se necesit
 	* [CUDA](https://developer.nvidia.com/cuda-downloads).
 4. [Arduino](https://docs.arduino.cc/software/ide-v1/tutorials/Windows)
 	* [ESP32 Library](https://randomnerdtutorials.com/installing-the-esp32-board-in-arduino-ide-windows-instructions/).
+	* [ArduinoJSON Library](https://arduinojson.org/).
 
 ## Algoritmo OCR
 Este algoritmo de reconocimiento de caracteres por medio de vision de computadora pretende reconocer los angulos de ajuste desplegados por el sistema de Varioguide en la pantalla del laboratorio de HUMANA Guatemala y de esta manera automatizar el proceso quirurjico de un neurocirujano.
@@ -38,7 +39,10 @@ En las siguientes imagenes se puede observar el desarrollo del procesamiento de 
 ### Procesamiento
 ![Procesada](Prototipos/OCR1/processed.jpg)
 ### Recortada
-![Recortada](Prototipos/OCR1/cutted.jpg)
+![Recortada](Prototipos/ceroprocesado.jpg)
+### digito recortado y procesado
+![Digito](Resultados/OCR1/cutted.png)
+
 
 ## Sistema de soporte de camara Web
 Este sistema de soporte de pantalla fue desarrollado utilizando la herramienta de Autodesk Inventor Professional 2023 y en desarrollo cad se determino de la siguiente manera:
