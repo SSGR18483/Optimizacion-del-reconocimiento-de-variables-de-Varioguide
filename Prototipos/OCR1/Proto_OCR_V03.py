@@ -59,20 +59,43 @@ def obtenercaptura():
 
 
 # MANEJO DE DATOS DE LOS SISTEMAS
+# def Handdle(String):
+#     txt= String.split(" ")    # s=re.findall(r'\b\d+\b',String)
+#     if 'Joint' or 'oint'in txt:
+#         if '1' in txt:
+#             Joint = 1
+#         elif '2' in txt:
+#             Joint = 2
+#         elif '3' in txt:
+#             Joint = 3
+#         aftermant = 'Se leyó adecuadamente'
+#     if 'Joint' or 'oint' not in txt:
+#         Joint = 0;
+#         aftermant = 'No se pudo leer correctamente'
+#     return  Joint,aftermant
+
+# MANEJO DE DATOS DE LOS SISTEMAS
 def Handdle(String):
-    txt= String.split(" ")    # s=re.findall(r'\b\d+\b',String)
-    if 'Joint' or 'oint'in txt:
-        if '1' in txt:
-            Joint = 1
-        elif '2' in txt:
-            Joint = 2
-        elif '3' in txt:
-            Joint = 3
-        aftermant = 'Se leyó adecuadamente'
-    if 'Joint' or 'oint' not in txt:
+    if String.find('Joint 1') >=0:
+        Joint = 1;
+        aftermath = 'Se leyó adecuadamente';
+    elif String.find('Joint 2') >=0:
+        Joint = 2;
+        aftermath = 'Se leyó adecuadamente';
+    elif String.find('Joint 3') >=0:
+        Joint = 3;
+        aftermath = 'Se leyó adecuadamente';
+    else:
         Joint = 0;
-        aftermant = 'No se pudo leer correctamente'
-    return  Joint,aftermant
+        aftermath = 'No se pudo leer adecuadamente, intente de nuevo'
+    return Joint,aftermath
+
+def signohanddle(string):
+    if string.find(' - ') >=0:
+        signo = -1
+    else:
+        signo = 1
+    return signo
 
 
 # inversion de colores de imagenes
@@ -383,11 +406,12 @@ thin_img = thin(nonoise_img) # imagen con letras mas delgadas
 thick_img = thick(nonoise_img) #imagen con letras mas gruesas
 ocr_result= pytesseract.image_to_string(nonoise_img)
 print(ocr_result)
-Joints,mensajito = Handdle(ocr_result)
+Joints,mensajito = Handdle(str(ocr_result))
+signo = signohanddle(str(ocr_result))
 print("-----------------")
 print(mensajito)
 print(Joints)
-
+print(signo)
 mnist = tf.keras.datasets.mnist
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
 
@@ -431,8 +455,7 @@ while os.path.isfile(f"digit{image_no}.png"):
 
 digitos= float(digit1+(digit2/10))
 print("````````````````````````````````````````````````````````````````````````")
-# print(f"{mensajito} el angulo de arreglo de la junta {Joints}  y es:  {digitos}")
-print(f"Se leyó adecuadamente el ángulo de arreglo de la junta 1  y es:  {digitos}")
+print(f"{mensajito} el angulo de arreglo de la junta {Joints} y es: {signo*digitos}")
 print("........................................................................")
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PAGINAS QUE PUEDEN SER UTILES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
