@@ -23,6 +23,9 @@ bg = ImageTk.PhotoImage(img)
 cortada = PIL.Image.open("D:/Documentos/UVG/QUINTO AÑO/Segundo Semestre/Diseño e innovación/GIT/Optimizacion-del-reconocimiento-de-variables-de-Varioguide/Prototipos/OCR1/cutted.jpg")
 recortetk = ImageTk.PhotoImage(cortada)
 
+Joint = 1
+ADJ1 = 0.2
+ADJ2 = 0
 #funciones de los clicks
 #salir
 def exitclick():
@@ -32,15 +35,12 @@ def cleart():
     mytext1.delete(1.0,END)
 
 def mostrarJ():
-    Joint = 2
-    ADJ1 = -0.2
-    ADJ2 = 0
     if Joint == 1 or Joint == 3:
-        oracion = f"La junta {Joint} tiene\n-Un ajuste de grado de: {ADJ1}"
+        oracion = f"La junta {Joint} tiene:\n-Un ajuste de grado de: {ADJ1}º"
     elif Joint == 2:
-        oracion = f"La junta {Joint} tiene\n-Un ajuste de ángulo de: {ADJ1}º \n-Un ajuste de desplazamiento de: {ADJ2}mm"
+        oracion = f"La junta {Joint} tiene:\n-Un ajuste de ángulo de: {ADJ1}º \n-Un ajuste de desplazamiento de: {ADJ2}mm"
     else:
-        oracion = f"No se ha leido ninguna junta o ajuste."
+        oracion = f"No se reconoce ninguna junta o ajuste."
     mytext1.insert(0.1,str(oracion))
 
 def showimagencort():
