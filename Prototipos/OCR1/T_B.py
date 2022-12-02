@@ -37,11 +37,11 @@ def contorno_numeros(corte): # entra imagen normal y sale imagen normal con cont
     No_dig = 1
     # thresh = cv2.adaptiveThreshold(blur, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 11, 2)
     thresh = cv2.threshold(blur, 107, 510, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
-    kernel = np.ones((3, 4), np.uint8)
-    thresh = cv2.erode(thresh, kernel, iterations=1)
-    plt.imshow(thresh, cmap='gray')
-    plt.title('Example', fontweight="bold")
-    plt.show()
+    # kernel = np.ones((3, 4), np.uint8)
+    # thresh = cv2.erode(thresh, kernel, iterations=1)
+    # plt.imshow(thresh, cmap='gray')
+    # plt.title('Example', fontweight="bold")
+    # plt.show()
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     for c in contours:
         x, y, w, h = cv2.boundingRect(c)
@@ -72,9 +72,28 @@ figurita = contorno_numeros(img_color)
 mnist = tf.keras.datasets.mnist
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
 
-xtrain = tf.keras.utils.normalize(x_train, axis =1)
-x_test = tf.keras.utils.normalize(x_test,axis=1)
+# xtrain = tf.keras.utils.normalize(x_train, axis =1)
+# x_test = tf.keras.utils.normalize(x_test,axis=1)
+X_train = x_train / 255
+X_test = x_test / 255
+X_train = X_train.reshape(-1,28,28,1)    #training set
+X_test = X_test.reshape(-1,28,28,1)
 
+model= tf.keras.models.Sequential([
+    tf.keras.layers.Conv2D(filters=25, kernel_size=(3, 3), activation='relu', input_shape=(28,28,1)),
+    tf.keras.layers.MaxPooling2D((2, 2)),
+    tf.keras.layers.Conv2D(filters=64, kernel_size=(3, 3), activation='relu'),
+    tf.keras.layers.MaxPooling2D((2, 2)),
+    tf.keras.layers.Conv2D(filters=64, kernel_size=(3, 3), activation='relu'),
+    tf.keras.layers.MaxPooling2D((2, 2)),
+    tf.keras.layers.Flatten(),
+    tf.keras.layers.Dense(64, activation='relu'),
+    tf.keras.layers.Dense(10, activation='softmax')
+])
+
+epochs=20
+model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3), loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+history=model.fit(X_train,y_train, epochs=epochs,validation_data=(X_test,y_test))
 # model = tf.keras.models.Sequential()
 # # model.add(tf.keras.layers.Conv2D(64, (3, 3), activation='relu', kernel_initializer='he_uniform', input_shape=(28, 28, 1)))
 # model.add(tf.keras.layers.Flatten(input_shape=(28,28)))
@@ -83,12 +102,11 @@ x_test = tf.keras.utils.normalize(x_test,axis=1)
 # model.add(tf.keras.layers.Dense(100, activation = 'sigmoid'))
 # model.add(tf.keras.layers.Dense(10,activation = 'softmax'))
 # epochs = 25
-# model.compile(optimizer ='adam', loss='sparse_categorical_crossentropy',metrics= ['accuracy'])
-# history=model.fit(x_train, y_train, epochs=epochs,validation_data=(x_test,y_test))
-# model.save('mnist_model')
-model = tf.keras.models.load_model('mnist_model')
-
-loss, accuracy = model.evaluate(x_test, y_test)
+# model.compile(optimizer =tf.keras.optimizers.Adam(learning_rate=1e-3), loss='sparse_categorical_crossentropy',metrics= ['accuracy'])
+# history=model.fit(x_train, y_train, epochs=epochs,validation_data=(x_test,y_test),batch_size=64)
+model.save('cnn.model')
+# model = tf.keras.models.load_model('mymodel')
+loss, accuracy = model.evaluate(X_test, y_test)
 
 def graf_DNN(history,epochs): #funcion que recibe un model fit con epochs y grafica el desempeño del modelo
     #recomendable utilizar un model.fit con datos de entrenamiento, epochs y los datos de validacion
@@ -105,16 +123,16 @@ def graf_DNN(history,epochs): #funcion que recibe un model fit con epochs y graf
     plt.plot(epochs_range, acc, label='Training Accuracy')
     plt.plot(epochs_range, val_acc, label='Validation Accuracy')
     plt.legend(loc='lower right')
-    plt.title('Accuracy de entrenamiento vs validacion')
+    plt.title('Precisión de entrenamiento vs validación')
 
     plt.subplot(1, 2, 2)
     plt.plot(epochs_range, loss, label='Training Loss')
     plt.plot(epochs_range, val_loss, label='Validation Loss')
     plt.legend(loc='upper right')
-    plt.title('Perdida de entrenamiento y validacion')
+    plt.title('Perdida de entrenamiento y validación')
     plt.show()
     return
-
+graf_DNN(history,epochs)
 
 def no_proces(imagen): #funcion que recibe imagen y que la regresa en blanco y negro con dimensiones de 28x28
     imagen = cv2.cvtColor(imagen, cv2.COLOR_BGR2GRAY)
@@ -123,9 +141,11 @@ def no_proces(imagen): #funcion que recibe imagen y que la regresa en blanco y n
     imagen = np.array([imagen])
     return imagen
 
-image_no=3
+image_no=4
 digit1=0
 digit2=0
+yprepdecido = model.predict(X_test)
+print(np.argmax(yprepdecido[0]))
 while os.path.isfile(f"digit{image_no}.png"):
     try:
         path = f"digit{image_no}.png"
@@ -135,9 +155,9 @@ while os.path.isfile(f"digit{image_no}.png"):
         # plt.show()
         prediction = model.predict(img)
         # print(f"el numero es probablemente un {np.argmax(prediction)}")
-        if image_no ==3:
+        if image_no ==4:
             digit2 = np.argmax(prediction)
-        elif image_no ==4:
+        elif image_no ==5:
             digit1 =np.argmax(prediction)
         else:
             print("Error")

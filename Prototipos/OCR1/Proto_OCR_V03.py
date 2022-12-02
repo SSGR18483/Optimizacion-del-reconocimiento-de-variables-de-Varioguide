@@ -76,13 +76,13 @@ def obtenercaptura():
 
 # MANEJO DE DATOS DE LOS SISTEMAS
 def Handdle(String):
-    if String.find('Joint 1') >=0:
+    if String.find('Joint 1') >=0 or String.find('int 1') >=0:
         Joint = 1;
         aftermath = 'Se leyó adecuadamente';
-    elif String.find('Joint 2') >=0:
+    elif String.find('Joint 2') >=0 or String.find('int 2')>=0:
         Joint = 2;
         aftermath = 'Se leyó adecuadamente';
-    elif String.find('Joint 3') >=0:
+    elif String.find('Joint 3') >=0 or String.find('int 3')>=0:
         Joint = 3;
         aftermath = 'Se leyó adecuadamente';
     else:
@@ -264,7 +264,8 @@ def dibujo_contornos(picture):
     return imagen,cx,cy
 
 def recorte_inicial(image,cx,cy):#,x,y):#imgnp cx es 960 y cy es 540
-    fig0=image[ cy-505:cy+505,cx-665:cx+640,:]
+    # fig0=image[ cy-505:cy+505,cx-665:cx+640,:]
+    fig0 = image[cy - 540:cy + 540, cx - 665:cx + 640, :]
     # fig0 = image[cy - 485:cy + 485, cx - 660:cx + 631, :]
     # fig0 = image[cy - 456:cy + 456, cx - 577:cx + 577, :]
     return fig0
@@ -281,10 +282,10 @@ def contorno_numeros(corte): # entra imagen normal y sale imagen normal con cont
     for c in contours:
         x, y, w, h = cv2.boundingRect(c)
         try:
-            if (w*h > 150) & (w*h < 600) :
+            if (w*h > 210) & (w*h < 600) :
                 # cv2.rectangle(corteguardar, (x-(2), y-(2)), (x + w+(2), y + h+(2)), color=(0, 255, 0), thickness=2)
                 # estado = cv2.imwrite('contornosnum.jpg', corteguardar)
-                fig0 = roi[y-2:y+h+2, x-1:x+w+2]
+                fig0 = roi[y-2:y+h+2, x-2:x+w+2]
                 fig0 = cv2.cvtColor(fig0, cv2.COLOR_GRAY2RGB)
                 plt.imshow(fig0, cmap='gray')
                 plt.title('Example', fontweight="bold")
@@ -356,7 +357,7 @@ def graf_DNN(history,epochs): #funcion que recibe un model fit con epochs y graf
 
 # abrir una imagen.
 # image_file= 'humana1.png' Caso de imagen
-image_file='cap1long.jpg'
+image_file='J1[-5.1].jpg'
 #CASO
 CASO=2
 if CASO==1:
@@ -412,26 +413,28 @@ print("-----------------")
 print(mensajito)
 print(Joints)
 print(signo)
+
 mnist = tf.keras.datasets.mnist
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
 
 xtrain = tf.keras.utils.normalize(x_train, axis =1)
 x_test = tf.keras.utils.normalize(x_test,axis=1)
 
+
 # model = tf.keras.models.Sequential()
-# # model.add(tf.keras.layers.Conv2D(64, (3, 3), activation='relu', kernel_initializer='he_uniform', input_shape=(28, 28, 1)))
 # model.add(tf.keras.layers.Flatten(input_shape=(28,28)))
-# model.add(tf.keras.layers.Dense(1000, activation ='tanh'))
-# model.add(tf.keras.layers.Dense(500, activation ='relu'))
-# model.add(tf.keras.layers.Dense(100, activation = 'sigmoid'))
+# model.add(tf.keras.layers.Dense(500, activation ='tanh'))
+# model.add(tf.keras.layers.Dense(250, activation ='relu'))
+# model.add(tf.keras.layers.Dense(100, activation = 'relu'))
 # model.add(tf.keras.layers.Dense(10,activation = 'softmax'))
-# epochs = 40
+# epochs = 60
 # model.compile(optimizer =tf.keras.optimizers.Adam(learning_rate=1e-3), loss='sparse_categorical_crossentropy',metrics= ['accuracy'])
 # history=model.fit(x_train, y_train, epochs=epochs,validation_data=(x_test,y_test))
 # model.save('mnist.model')
 # graf_DNN(history,epochs)
 
-model = tf.keras.models.load_model('mnist.model')
+digit1 = 0;digit2=0;digit0=0;
+model = tf.keras.models.load_model('cnn.model')
 image_no=5
 while os.path.isfile(f"digit{image_no}.png"):
     try:
@@ -442,10 +445,12 @@ while os.path.isfile(f"digit{image_no}.png"):
         # plt.show()
         prediction = model.predict(img)
         # print(f"el numero es probablemente un {np.argmax(prediction)}")
-        if image_no <=5:
+        if image_no ==5:
             digit2 = np.argmax(prediction)
-        elif image_no >=6:
+        elif image_no ==6:
             digit1 =np.argmax(prediction)
+        elif image_no ==11:
+            digit0 = np.argmax(prediction)
         else:
             print("Error")
     except:
@@ -453,11 +458,10 @@ while os.path.isfile(f"digit{image_no}.png"):
     finally:
         image_no +=1
 
-digitos= float(digit1+(digit2/10))
+digitos= float(digit0*10+digit1+(digit2/10))
 print("````````````````````````````````````````````````````````````````````````")
 print(f"{mensajito} el angulo de arreglo de la junta {Joints} y es: {signo*digitos}")
 print("........................................................................")
-
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PAGINAS QUE PUEDEN SER UTILES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #Upscale
 #https://towardsdatascience.com/deep-learning-based-super-resolution-with-opencv-4fd736678066
