@@ -267,7 +267,7 @@ def contorno_numeros(corte): # entra imagen normal y sale imagen normal con cont
             if (w*h > 210) & (w*h < 600) :
                 # cv2.rectangle(corteguardar, (x-(2), y-(2)), (x + w+(2), y + h+(2)), color=(0, 255, 0), thickness=2)
                 # estado = cv2.imwrite('contornosnum.jpg', corteguardar)
-                fig0 = roi[y-2:y+h+2, x-2:x+w+2]
+                fig0 = roi[y-2:y+h+2, x-3:x+w+3]
                 fig0 = cv2.cvtColor(fig0, cv2.COLOR_GRAY2RGB)
                 plt.imshow(fig0, cmap='gray')
                 plt.title('Example', fontweight="bold")
@@ -279,10 +279,9 @@ def contorno_numeros(corte): # entra imagen normal y sale imagen normal con cont
                 # plt.show()
                 filename = f"digit{No_dig}.png"
                 status = cv2.imwrite(filename, fig0)
+                No_dig += 1
         except:
             print(f"Erorr! No. {No_dig}")
-        finally:
-            No_dig +=1
     return (corte)
 
 
@@ -339,7 +338,16 @@ def graf_DNN(history,epochs): #funcion que recibe un model fit con epochs y graf
 
 # abrir una imagen.
 # image_file= 'humana1.png' Caso de imagen
-image_file='J1[-5.1].jpg'
+
+
+
+
+
+image_file='J1[-5.3].jpg'
+
+
+
+
 #CASO
 CASO=2
 if CASO==1:
@@ -401,28 +409,29 @@ X_test = x_test / 255
 X_train = X_train.reshape(-1,28,28,1)    #training set
 X_test = X_test.reshape(-1,28,28,1)
 
-# model= tf.keras.models.Sequential([
-#     tf.keras.layers.Conv2D(filters=25, kernel_size=(3, 3), activation='relu', input_shape=(28,28,1)),
-#     tf.keras.layers.MaxPooling2D((2, 2)),
-#     tf.keras.layers.Conv2D(filters=64, kernel_size=(3, 3), activation='relu'),
-#     tf.keras.layers.MaxPooling2D((2, 2)),
-#     tf.keras.layers.Conv2D(filters=64, kernel_size=(3, 3), activation='relu'),
-#     tf.keras.layers.MaxPooling2D((2, 2)),
-#     tf.keras.layers.Flatten(),
-#     tf.keras.layers.Dense(64, activation='relu'),
-#     tf.keras.layers.Dense(10, activation='softmax')
-# ])
-#
-# epochs=20
-# model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3), loss='sparse_categorical_crossentropy', metrics=['accuracy'])
-# history=model.fit(X_train,y_train, epochs=epochs,validation_data=(X_test,y_test))
-# model.save('cnn.model')
-model = tf.keras.models.load_model('cnn.model')
-loss, accuracy = model.evaluate(X_test, y_test)
+model= tf.keras.models.Sequential([
+    tf.keras.layers.Conv2D(filters=25, kernel_size=(3, 3), activation='relu', input_shape=(28,28,1)),
+    tf.keras.layers.MaxPooling2D((2, 2)),
+    tf.keras.layers.Conv2D(filters=64, kernel_size=(3, 3), activation='relu'),
+    tf.keras.layers.MaxPooling2D((2, 2)),
+    tf.keras.layers.Conv2D(filters=64, kernel_size=(3, 3), activation='relu'),
+    tf.keras.layers.MaxPooling2D((2, 2)),
+    tf.keras.layers.Flatten(),
+    tf.keras.layers.Dense(128, activation='relu'),
+    tf.keras.layers.Dense(64, activation='relu'),
+    tf.keras.layers.Dense(10, activation='softmax')
+])
 
+epochs=20
+model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3), loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+history=model.fit(X_train,y_train, epochs=epochs,validation_data=(X_test,y_test))
+model.save('cnn.model')
+# model = tf.keras.models.load_model('cnn.model')
+loss, accuracy = model.evaluate(X_test, y_test)
+graf_DNN(history,epochs)
 digit1 = 0;digit2=0;digit0=0;
-model = tf.keras.models.load_model('cnn.model')
-image_no=5
+# model = tf.keras.models.load_model('cnn.model')
+image_no=1
 while os.path.isfile(f"digit{image_no}.png"):
     try:
         path = f"digit{image_no}.png"
@@ -432,11 +441,11 @@ while os.path.isfile(f"digit{image_no}.png"):
         # plt.show()
         prediction = model.predict(img)
         # print(f"el numero es probablemente un {np.argmax(prediction)}")
-        if image_no ==5:
+        if image_no ==1:
             digit2 = np.argmax(prediction)
-        elif image_no ==6:
+        elif image_no ==2:
             digit1 =np.argmax(prediction)
-        elif image_no ==11:
+        elif image_no ==3:
             digit0 = np.argmax(prediction)
         else:
             print("Error")
