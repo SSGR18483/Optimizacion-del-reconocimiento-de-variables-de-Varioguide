@@ -1,3 +1,12 @@
+#
+#     __  ___    ________
+#    / / / / |  / / ____/
+#   / / / /| | / / / __
+#  / /_/ / | |/ / /_/ /
+#  \____/  |___/\____/
+#
+#  GUI
+#
 # UVG
 # Prototipo de GUI para el diseño final
 # Santiago Galicia
