@@ -9,49 +9,57 @@
 import serial
 import time
 import socket
+import sys
 
+# Create a TCP/IP socket
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-
-HOST = "192.168.56.1"  # Standard loopback interface address (localhost)
+# Bind the socket to the port
+HOST = "192.168.1.22"  # Standard loopback interface address (localhost)
 PORT = 80  # Port to listen on (non-privileged ports are > 1023)
 
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    s.bind((HOST, PORT))
-    s.listen()
-    conn, addr = s.accept()
-    with conn:
-        print(f"Connected by {addr}")
-        while True:
-            data = conn.recv(1024)
-            if not data:
-                break
-            conn.sendall(data)
+server_address = (HOST, PORT)
+sock.bind(server_address)
 
-def TCPsend(j1,s,No):
-    try:
-        sock = socket.socket()
-        HOST = "192.168.0.1"# Ip en network
-        PORT = 80# Puerto al que se envia
-        sock.connect((HOST, PORT))
-        #mensaje = {"data":[j1,s,No]}#J1,S,NO:
-        mensaje ="{data: [" + f"{j1}" + "," + f"{s}" + "," + f"{No}" + "]}"
-        mensaje = mensaje.encode("ascii")#se configura en ascci
-        sock.send(mensaje)#manda el mensaje
-        data = ""
-        while len(data) < len(mensaje):
-            temp = sock.recv(1)
-            temp = temp.decode("ascii")
-            data += temp
-        print(data)
-        sock.close()
-    except NameError:
-        message='Dato invalido'
-    except:
-        message='No se pudo conectar al cliente'
-    return message
+juntas = [[1.1, 0.2, 1.1]]#, [2.1, 2.2, 2.3], [3.1, 3.2, 3.3], [4.1, 4.2, 4.3]]
 
-j1 = float(1.0)
-s=float(1.0)
-No=float(0.2)
-message = TCPsend(j1,s,No)
-print(message)
+
+def TCPsend(dic):
+
+    j1 = dic[0]
+    s = dic[1]
+    No = dic[2]
+    # mensaje = {"data":[j1,s,No]}#J1,S,NO:
+    mensaje = "{data: [" + f"{j1}" + "," + f"{s}" + "," + f"{No}" + "]}"
+    mensaje = mensaje.encode("ascii")  # se configura en ascci
+    connection.sendall(mensaje)  # manda el mensaje
+    return mensaje
+
+
+def TCPreceive():
+    # Receive the data in small chunks and retransmit it
+    recv_data = connection.recv(16)
+    return recv_data
+
+
+if __name__ == "__main__":
+    # Listen for incoming connections
+    sock.listen(1)
+    j1 = 1.1
+    s = 1.0
+    No = 0.2
+
+    print("Esperando conexión...")
+    connection, client_address = sock.accept()
+
+    num_juntas = len(juntas)
+    for index in range(0, num_juntas):
+        print("Mandar mensaje...")
+        msg = TCPsend(juntas[index])
+        print("Recibir mensaje...")
+        msg_recv = TCPreceive()
+
+        print(msg)
+        print("\n")
+        print(msg_recv)
+        print("\n")
