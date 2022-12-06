@@ -74,10 +74,8 @@ mytext1.place(x=300,y=345)
 # Create Buttons
 
 
-button1 = Button(root, text="Determinar tipo de Junta")
-button1.place(x=25,y=50,width=150,height=50)
 button2 = Button(root, text="Reconocer Valores",command=mostrarJ)
-button2.place(x=440,y=50,width=130,height=50)
+button2.place(x=25,y=50,width=130,height=50)
 button3 = Button(root, text="Salir",command=exitclick)
 button3.place(x=900,y=700,width=100,height=50)
 button4 = Button(root, text="Enviar Valores")

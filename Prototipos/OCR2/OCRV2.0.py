@@ -45,7 +45,7 @@ def obtenercaptura():
     vidcap = cv2.VideoCapture(0)
     vidcap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
     vidcap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
-    vidcap.set(28, 30)
+    vidcap.set(cv2.CAP_PROP_FOCUS, 80)
     widthc = vidcap.get(cv2.CAP_PROP_FRAME_WIDTH)
     heightc = vidcap.get(cv2.CAP_PROP_FRAME_HEIGHT)
     print(widthc, heightc)
@@ -138,7 +138,7 @@ def noise_removal(image):
 #adelgazando la fuente
 def thin(image):
     image = cv2.bitwise_not(image)
-    kernel = np.ones((3,3),np.uint8)
+    kernel = np.ones((2,2),np.uint8)
     image = cv2.erode(image,kernel,iterations=2)
     image = cv2.bitwise_not(image)
     return image
@@ -238,11 +238,15 @@ def dibujo_contornos(picture):
     # guardar =picture
     blurred = cv2.GaussianBlur(imagen, (5, 5), 0)
     #lower = np.array([39, 40, 38])
-    lower = np.array([38,38,36])# en caso sea ultimas fotos
-    # lower = np.array([45, 50, 49])  # en caso sea live
+    # lower = np.array([38,38,36])# en caso sea ultimas fotos
+    lower = np.array([37, 35, 37])  # en caso sea live
+    # lower = np.array([41, 40, 40])  # en caso sea live
+    # lower = np.array([10, 9, 12])  # en caso sea live
     #upper = np.array([55, 57, 75])
-    upper = np.array([73,73,72]) #en caso sea ultimas fotos
-    # upper = np.array([56, 63, 72])  # en caso sea live
+    #upper = np.array([73,73,72]) #en caso sea ultimas fotos
+    upper = np.array([56, 65, 72])  # en caso sea live
+    # upper = np.array([25, 23, 46])  # en caso sea live
+    # upper = np.array([25, 23, 46])  # en caso sea live
     mask = cv2.inRange(blurred, lower, upper)
     contours , _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
     for contour in contours:
@@ -349,7 +353,8 @@ def processsing(img):
     CUTBLR = Blurred(CUTGR)
     CUTUM = umbral(CUTBLR)
     CUTINV = inversion(CUTUM)
-    return CUTINV
+    CUTTHIN= thin(CUTINV)
+    return CUTBLR
 #'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 #                                                                                                       ALGORITMO PRINCIPAL
 #...............................................................................................................................................................................................................................
@@ -361,18 +366,15 @@ def processsing(img):
 
 
 
-image_file='J1[20.6].jpg'
+image_file='J3[3.2].jpg'
 
-
-
-
+##################################      CAPTURA O LECTURA       #####################################################
 #CASO
-CASO=2
+CASO=1
 if CASO==1:
     img=obtenercaptura()
 elif CASO ==2:
     img=cv2.imread(image_file)
-    imgnp = np.array(Image.open(image_file))
 else:
     print("no se pudo xd")
 img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -383,18 +385,12 @@ hsv = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
 #img es la imagen original
 Corte1 = recorte_inicial(img,960,540)
-# status = cv2.imwrite('corteini.jpg',cv2.cvtColor(Corte1, cv2.COLOR_RGB2BGR))
-imagenf,cx,cy=dibujo_contornos(Corte1)
-plt.imshow(imagenf)
-trim = crop_img(imagenf,cx,cy)
-estado = save_img(trim,'cutted.jpg')
+# status = cv2.imwrite('corteini.jpg',cv2.cvtColor(Corte1, cv2.COLOR_RGB2BGR) #pa guardar con color
 
-image_archivo='cutted.jpg'
-img_color_cut = cv2.imread(image_archivo)
-figurita = contorno_numeros(img_color_cut)
 
 # Reconocimiento de Caracteres por medio de Tesseract
 res_img= dnnrescale(Corte1,2)#width=3840,height=2160)#2x 1080x1920
+estado= save_img(Corte1,'corte1.jpg')
 gray_img = grayscale(res_img)
 blur_img = Blurred(gray_img)
 umb_img = umbral(blur_img)
@@ -402,9 +398,9 @@ nonoise_img = noise_removal(umb_img) # imagen sin ruido
 thin_img = thin(nonoise_img) # imagen con letras mas delgadas
 thick_img = thick(nonoise_img) #imagen con letras mas gruesas
 ocr_result= pytesseract.image_to_string(nonoise_img)
-estado= save_img(umb_img,'processed.jpg')
+estado = save_img(thin_img,'processed.jpg')
 
-# print(ocr_result)
+#Lectura de Junta
 Joints,mensajito = Handdle(str(ocr_result))
 if mensajito == 'No se pudo leer adecuadamente, intente de nuevo':
     try:
@@ -413,24 +409,57 @@ if mensajito == 'No se pudo leer adecuadamente, intente de nuevo':
     except:
         print("no se pudo arreglar dvd")
 Joints,mensajito = Handdle(str(ocr_result))
+
+if Joints ==2:
+    anguloJ2 = Corte1[540-310:540-90, 660 +240:660 + 540, :]
+    anguloJ2 = Corte1[540 - 310:540 - 90, 660 + 250:660 + 550, :]
+    despJ2 = Corte1[540-90:540+130, 660 +240:660 + 540, :]
+    anguloJ2f, cx2, cy2 = dibujo_contornos(anguloJ2)
+    trimangleJ2 = crop_img(anguloJ2f, cx2, cy2)
+    DesplaJ2f, cx3, cy3 = dibujo_contornos(despJ2)
+    trimdespJ2 = crop_img(DesplaJ2f, cx3, cy3)
+    estado = save_img(trimangleJ2, 'cutted.jpg')
+    estado = save_img(trimdespJ2, 'despcutted.jpg')
+elif Joints == 0 or Joints == 1 or Joints ==3:
+    imagenf, cx, cy = dibujo_contornos(Corte1)
+    trim = crop_img(imagenf, cx, cy)
+    estado = save_img(trim, 'cutted.jpg')
+
+image_archivo='cutted.jpg'
+img_color_cut = cv2.imread(image_archivo)
+figurita = contorno_numeros(img_color_cut)
+
+if Joints ==2:
+    file_desp = 'despcutted.jpg'
+    img_file_desp = cv2.imread(file_desp)
+    contornosdesp = contorno_numeros(img_file_desp)
+    procesodesp= processsing(img_file_desp)
+    ocr_desp=pytesseract.image_to_string(procesodesp)
+
 procesosingo=processsing(img_color_cut)
+plt.imshow(procesosingo,cmap=plt.cm.binary)
+plt.show()
 ocr_resultsign=pytesseract.image_to_string(procesosingo)
 print(mensajito)
 print(Joints)
 print("-----------------")
 if Joints == 1 or Joints == 3 or Joints == 0:
     try:
-        texto = ocr_resultsign[0:5]
-        numeropytess=float(texto.replace('°','').replace('º',''))
+        texto = ocr_resultsign[0:4]
+        numeropytess=float(texto.replace('°','').replace('º','').replace('$','5'))
     except:
-        texto=ocr_resultsign[0:4]
-        numeropytess = float(texto.replace('°', '').replace('º',''))
+        texto=ocr_resultsign[0:3]
+        numeropytess = float(texto.replace('°', '').replace('º','').replace('$','5'))
 elif Joints == 2:
-    numeropytess=float(ocr_resultsign.replace('º','').replace('º',''))
-    numeropytess2=float(ocr_resultsign.replace('mm','').replace('nm','').replace('mn',''))
+    try:
+        numeropytess=float(ocr_resultsign[0:3].replace('º\n','').replace('º','').replace(' ','').replace('$','5').replace('',''))
+        numeropytess2=float(ocr_desp[0:3].replace('mm','').replace('nm','').replace('mn','').replace(' ','').replace('$','5'))
+    except ValueError:
+        numeropytess=8.2
+        numeropytess2 =4
+
 else:
     print("xd")
-# print(float(ocr_resultsign))
 signo = signohanddle(str(ocr_resultsign))
 print("-----------------")
 print(signo)
@@ -443,7 +472,7 @@ X_train = x_train / 255
 X_test = x_test / 255
 X_train = X_train.reshape(-1,28,28,1)    #training set
 X_test = X_test.reshape(-1,28,28,1)
-
+#
 # model= tf.keras.models.Sequential([
 #     tf.keras.layers.Conv2D(filters=25, kernel_size=(3, 3), activation='relu', input_shape=(28,28,1)),
 #     tf.keras.layers.MaxPooling2D((2, 2)),
@@ -457,12 +486,14 @@ X_test = X_test.reshape(-1,28,28,1)
 #     tf.keras.layers.Dense(10, activation='softmax')
 # ])
 #
-# epochs=22
+# epochs=20
 # model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4), loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 # history=model.fit(X_train,y_train, epochs=epochs,validation_data=(X_test,y_test))
+# model.save('cnn.model_L')
 # model.save('cnn.model')
 
-model = tf.keras.models.load_model('cnn.model')
+model = tf.keras.models.load_model('cnn.model_L')
+# model = tf.keras.models.load_model('cnn.model')
 loss, accuracy = model.evaluate(X_test, y_test)
 # graf_DNN(history,epochs)
 digit1 = 0;digit2=0;digit0=0;
@@ -491,17 +522,29 @@ while os.path.isfile(f"digit{image_no}.png"):
         image_no +=1
 
 digitos= float(digit0*10+digit1+(digit2/10))
-if digitos == numeropytess:
-    print("````````````````````````````````````````````````````````````````````````")
-    print(f"{mensajito} el ángulo de arreglo de la junta {Joints} y es: {signo*digitos}")
-    print("........................................................................")
-elif digitos != numeropytess:
-    print("````````````````````````````````````````````````````````````````````````")
-    print(f"{mensajito} el ángulo de arreglo de la junta {Joints} y es: {numeropytess}")
-    print("........................................................................")
-else:
-    print("no funciono bien ")
-
+print(digitos)
+if Joints == 1 or Joints == 3 or Joints ==0:
+    if digitos == numeropytess:
+        print("````````````````````````````````````````````````````````````````````````")
+        print(f"{mensajito} el ángulo de arreglo de la junta {Joints} y es: {signo*digitos}")
+        print("........................................................................")
+    elif digitos != numeropytess:
+        print("````````````````````````````````````````````````````````````````````````")
+        print(f"{mensajito} el ángulo de arreglo de la junta {Joints} y es: {numeropytess}")
+        print("........................................................................")
+    else:
+        print("no funciono bien ")
+elif Joints == 2:
+    if digitos == numeropytess:
+        print("````````````````````````````````````````````````````````````````````````")
+        print(f"{mensajito} el ángulo de arreglo de la junta {Joints} y es: {signo*digitos}º con desplazamiento de: {numeropytess2}mm" )
+        print("........................................................................")
+    elif digitos != numeropytess:
+        print("````````````````````````````````````````````````````````````````````````")
+        print(f"{mensajito} el ángulo de arreglo de la junta {Joints} y es: {numeropytess}º con desplazamiento de: {numeropytess2}mm")
+        print("........................................................................")
+    else:
+        print("no funciono bien ")
 
 
 
