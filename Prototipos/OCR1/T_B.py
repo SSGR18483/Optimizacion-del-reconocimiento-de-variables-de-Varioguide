@@ -404,21 +404,30 @@ if mensajito == 'No se pudo leer adecuadamente, intente de nuevo':
         print("no se pudo arreglar dvd")
 Joints,mensajito = Handdle(str(ocr_result))
 
-# if Joints ==2:
-# anguloJ1 = image[540-310:540-90, 660 +240:660 + 540, :]
-# despJ1 = image[540-90:540+130, 660 +240:660 + 540, :]
-#Se necesita hacer 2 recortes. 1 arriba y otro abajo xd
-plt.imshow(Corte1,cmap=plt.cm.binary)
-plt.show()
-estado = save_img(img,'normal.jpg')
-imagenf,cx,cy=dibujo_contornos(Corte1)
-trim = crop_img(imagenf,cx,cy)
-estado = save_img(trim,'cutted.jpg')
+if Joints ==2:
+    anguloJ2 = Corte1[540-310:540-90, 660 +240:660 + 540, :]
+    despJ2 = Corte1[540-90:540+130, 660 +240:660 + 540, :]
+    anguloJ2f, cx2, cy2 = dibujo_contornos(anguloJ2)
+    trimangleJ2 = crop_img(anguloJ2f, cx2, cy2)
+    DesplaJ2f, cx3, cy3 = dibujo_contornos(despJ2)
+    trimdespJ2 = crop_img(DesplaJ2f, cx3, cy3)
+    estado = save_img(trimangleJ2, 'cutted.jpg')
+    estado = save_img(trimdespJ2, 'despcutted.jpg')
+elif Joints == 0 or Joints == 1 or Joints ==3:
+    imagenf, cx, cy = dibujo_contornos(Corte1)
+    trim = crop_img(imagenf, cx, cy)
+    estado = save_img(trim, 'cutted.jpg')
 
 image_archivo='cutted.jpg'
 img_color_cut = cv2.imread(image_archivo)
 figurita = contorno_numeros(img_color_cut)
 
+if Joints ==2:
+    file_desp = 'despcutted.jpg'
+    img_file_desp = cv2.imread(file_desp)
+    contornosdesp = contorno_numeros(img_file_desp)
+    procesodesp= processsing(img_file_desp)
+    ocr_desp=pytesseract.image_to_string(procesodesp)
 
 procesosingo=processsing(img_color_cut)
 ocr_resultsign=pytesseract.image_to_string(procesosingo)
@@ -434,7 +443,7 @@ if Joints == 1 or Joints == 3 or Joints == 0:
         numeropytess = float(texto.replace('°', '').replace('º',''))
 elif Joints == 2:
     numeropytess=float(ocr_resultsign[0:4].replace('º\n','').replace('º','').replace(' ',''))
-    numeropytess2=float(ocr_resultsign[0:4].replace('mm','').replace('nm','').replace('mn',''))
+    numeropytess2=float(ocr_desp[0:4].replace('mm','').replace('nm','').replace('mn','').replace(' ',''))
 else:
     print("xd")
 signo = signohanddle(str(ocr_resultsign))
@@ -497,17 +506,28 @@ while os.path.isfile(f"digit{image_no}.png"):
         image_no +=1
 
 digitos= float(digit0*10+digit1+(digit2/10))
-if digitos == numeropytess:
-    print("````````````````````````````````````````````````````````````````````````")
-    print(f"{mensajito} el ángulo de arreglo de la junta {Joints} y es: {signo*digitos}")
-    print("........................................................................")
-elif digitos != numeropytess:
-    print("````````````````````````````````````````````````````````````````````````")
-    print(f"{mensajito} el ángulo de arreglo de la junta {Joints} y es: {numeropytess}")
-    print("........................................................................")
-else:
-    print("no funciono bien ")
-
+if Joints == 1 or Joints == 3 or Joints ==0:
+    if digitos == numeropytess:
+        print("````````````````````````````````````````````````````````````````````````")
+        print(f"{mensajito} el ángulo de arreglo de la junta {Joints} y es: {signo*digitos}")
+        print("........................................................................")
+    elif digitos != numeropytess:
+        print("````````````````````````````````````````````````````````````````````````")
+        print(f"{mensajito} el ángulo de arreglo de la junta {Joints} y es: {numeropytess}")
+        print("........................................................................")
+    else:
+        print("no funciono bien ")
+elif Joints == 2:
+    if digitos == numeropytess:
+        print("````````````````````````````````````````````````````````````````````````")
+        print(f"{mensajito} el ángulo de arreglo de la junta {Joints} y es: {signo*digitos}º con desplazamiento de: {numeropytess2}mm" )
+        print("........................................................................")
+    elif digitos != numeropytess:
+        print("````````````````````````````````````````````````````````````````````````")
+        print(f"{mensajito} el ángulo de arreglo de la junta {Joints} y es: {numeropytess}º con desplazamiento de: {numeropytess2}mm")
+        print("........................................................................")
+    else:
+        print("no funciono bien ")
 
 
 

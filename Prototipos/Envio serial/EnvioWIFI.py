@@ -24,7 +24,7 @@ import sys
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # Bind the socket to the port
-HOST = "192.168.1.22"  # Standard loopback interface address (localhost)
+HOST = "192.168.5.59"  # Standard loopback interface address (localhost)
 PORT = 80  # Port to listen on (non-privileged ports are > 1023)
 
 server_address = (HOST, PORT)
