@@ -370,7 +370,7 @@ image_file='J3[3.2].jpg'
 
 ##################################      CAPTURA O LECTURA       #####################################################
 #CASO
-CASO=1
+CASO=2
 if CASO==1:
     img=obtenercaptura()
 elif CASO ==2:
@@ -492,7 +492,7 @@ X_test = X_test.reshape(-1,28,28,1)
 # model.save('cnn.model_L')
 # model.save('cnn.model')
 
-model = tf.keras.models.load_model('cnn.model_L')
+model = tf.keras.models.load_model('cnn.model')
 # model = tf.keras.models.load_model('cnn.model')
 loss, accuracy = model.evaluate(X_test, y_test)
 # graf_DNN(history,epochs)
