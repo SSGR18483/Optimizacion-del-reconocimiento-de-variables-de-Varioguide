@@ -24,7 +24,7 @@ import sys
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # Bind the socket to the port
-HOST = "192.168.5.59"  # Standard loopback interface address (localhost)
+HOST = "192.168.130.176"  # Standard loopback interface address (localhost)
 PORT = 80  # Port to listen on (non-privileged ports are > 1023)
 
 server_address = (HOST, PORT)
@@ -54,13 +54,9 @@ def TCPreceive():
 if __name__ == "__main__":
     # Listen for incoming connections
     sock.listen(1)
-    j1 = 1.1
-    s = 1.0
-    No = 0.2
-
     print("Esperando conexión...")
     connection, client_address = sock.accept()
-
+    print("defined")
     num_juntas = len(juntas)
     for index in range(0, num_juntas):
         print("Mandar mensaje...")

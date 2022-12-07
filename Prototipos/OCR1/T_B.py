@@ -28,38 +28,64 @@ from cv2 import dnn_superres
 import tensorflow as tf
 import os
 import re
+import socket
+
 
 ###################################################################
 ####################### Definicion variables globales #######################
 ###################################################################
 global ret
+global connection
+global client_address
+global digitos
+digitos =0
 
 ###################################################################
 ####################### Definicion general #######################
 ###################################################################
-# Definición de datos de la camara
-vidcap = cv2.VideoCapture(0)
-vidcap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
-vidcap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
-vidcap.set(cv2.CAP_PROP_FOCUS, 75)
-widthc = vidcap.get(cv2.CAP_PROP_FRAME_WIDTH)
-heightc = vidcap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-while True:
-    # Capture frame-by-frame
-    ret, frame = vidcap.read()
-    # if frame is read correctly ret is True
-    if not ret:
-        print("Can't receive frame (stream end?). Exiting ...")
-        break
 
+# Create a TCP/IP socket
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-# check if connection with camera is successfully
+# Bind the socket to the port
+HOST = "192.168.130.176"  # Standard loopback interface address (localhost)
+PORT = 80  # Port to listen on (non-privileged ports are > 1023)
 
+server_address = (HOST, PORT)
+sock.bind(server_address)
+juntas = [[1.1, digitos, 1.1]]
+if __name__ == "__main__":
+    # Listen for incoming connections
+    sock.listen(1)
+    print("Esperando conexión...")
+    connection, client_address = sock.accept()
+    print("defined")
+    num_juntas = len(juntas)
 ###################################################################
 ############################# Funciones OCR #######################
 ###################################################################
 def obtenercaptura():
-    ret = frame
+    vidcap = cv2.VideoCapture(0)
+    vidcap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+    vidcap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+    vidcap.set(cv2.CAP_PROP_FOCUS, 80)
+    widthc = vidcap.get(cv2.CAP_PROP_FRAME_WIDTH)
+    heightc = vidcap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+    print(widthc, heightc)
+    # check if connection with camera is successfully
+    if vidcap.isOpened():
+        ret, frame = vidcap.read()  # capture a frame from live video
+
+        # check whether frame is successfully captured
+        if ret:
+            print("se pudo capturar el frame")
+        # print error if frame capturing was unsuccessful
+        else:
+            print("Error : no se capturo el frame")
+
+    # print error if the connection with camera is unsuccessful
+    else:
+        print("Cannot open camera")
     return frame
 
 
@@ -215,7 +241,7 @@ def save_img(image, filename):
 
 
 def crop_img(image, cx, cy):  # ,x,y):#imgnp
-    fig0 = image[cy - 40:cy + 40, cx - 95:cx + 90, :]
+    fig0 = image[cy - 40:cy + 40, cx - 60:cx + 90, :]
     return fig0
 
 
@@ -249,9 +275,11 @@ def dibujo_contornos(picture):
     # lower = np.array([45, 50, 49])  # en caso sea live
     # lower = np.array([12, 13, 12])  # en caso sea live apagado
     lower = np.array([37, 35, 37])  # en caso sea live
+    # lower = np.array([9, 5, 4])
     # upper = np.array([55, 57, 75])
     # upper = np.array([73,73,72]) #en caso sea ultimas fotos
     upper = np.array([56, 63, 72])  # en caso sea live
+    # upper = np.array([17, 17, 28])
     # upper = np.array([57, 65, 72])  # en caso sea live
     # upper = np.array([25, 24, 46])  # en caso sea live apagado
     #######################################################
@@ -295,14 +323,11 @@ def contorno_numeros(
         for c in contours:
             x, y, w, h = cv2.boundingRect(c)
             try:
-                if (w * h > 240) & (w * h < 600):
+                if (w * h > 200) & (w * h < 600):
                     # cv2.rectangle(corteguardar, (x-(2), y-(2)), (x + w+(2), y + h+(2)), color=(0, 255, 0), thickness=2)
                     # estado = cv2.imwrite('contornosnum.jpg', corteguardar)
                     fig0 = roi[y - 2:y + h + 2, x - 3:x + w + 3]
                     fig0 = cv2.cvtColor(fig0, cv2.COLOR_GRAY2RGB)
-                    # plt.imshow(fig0, cmap='gray')
-                    # plt.title('Example', fontweight="bold")
-                    # plt.show()
                     filename = f"digit{No_dig}.png"
                     status = cv2.imwrite(filename, fig0)
                     No_dig += 1
@@ -373,7 +398,26 @@ def processsing(img):
     CUT_THIN = thin(CUT_INV)
     return CUT_BLR
 
+###################################################################
+############################# Funciones TCP #######################
+###################################################################
 
+def TCPsend(dic):
+
+    j1 = dic[0]
+    s = dic[1]
+    No = dic[2]
+    # mensaje = {"data":[j1,s,No]}#J1,S,NO:
+    mensaje = "{data: [" + f"{j1}" + "," + f"{s}" + "," + f"{No}" + "]}"
+    mensaje = mensaje.encode("ascii")  # se configura en ascci
+    connection.sendall(mensaje)  # manda el mensaje
+    return mensaje
+
+
+def TCPreceive():
+    # Receive the data in small chunks and retransmit it
+    recv_data = connection.recv(16)
+    return recv_data
 ###################################################################
 ############################# Funciones GUI #######################
 ###################################################################
@@ -407,10 +451,10 @@ def mostrarJ():
     else:
         print("no se pudo xd")
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    # plt.imshow(img,cmap=plt.cm.binary)
-    # plt.show()
+    plt.imshow(img,cmap=plt.cm.binary)
+    plt.show()
     # estado = save_img(img,'normal.jpg')
-
+    status = cv2.imwrite('INICIAL1.jpg', cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
     # img es la imagen original
     Corte1 = recorte_inicial(img, 960, 540)
     # status = cv2.imwrite('corteini.jpg',cv2.cvtColor(Corte1, cv2.COLOR_RGB2BGR) #pa guardar con color
@@ -489,9 +533,11 @@ def mostrarJ():
             ocr_disp = "0.00"
 
     processed_sign = processsing(img_color_cut)
+    ocr_result_sign2 = pytesseract.image_to_string(
+        processed_sign)
     ocr_result_sign = pytesseract.image_to_string(
-        processed_sign)  # ,config='--psm 12 --oem 3 -c tessedit_char_whitelist=0123456789.-')
-    signo = signohanddle(str(ocr_result_sign))
+        processed_sign,config='digits')  # ,config='--psm 12 --oem 3 -c tessedit_char_whitelist=0123456789.-')
+    signo = signohanddle(str(ocr_result_sign2))
     print("-----------------")
     print(signo)
     ###################################################################################################################
@@ -499,17 +545,23 @@ def mostrarJ():
     ###################################################################################################################
     if Joints == 1 or Joints == 3 or Joints == 0:
         try:
-            texto = ocr_result_sign[0:3]
-            OCR_adjustment = float(
-                texto.replace('°', '').replace('º', '').replace(' ', '').replace('$', '5').replace('\n', '').replace(
-                    'PO', ''))
-            OCR_test_adjustment = float(re.sub('\D', texto))
+            texto = ocr_result_sign
+            # OCR_test_adjustment = float(re.sub('\D', texto))
+            print(texto)
+            OCR_adjustment = texto.replace(('°', '').replace('º', '').replace(' ', '').replace('$', '5').replace('\n', '').replace('PO', ''))
+        except ValueError:
+
+            texto = ocr_result_sign
+            print(texto)
+            # OCR_test_adjustment = float(re.sub(r'[^0-9]', '', texto))
+            OCR_adjustment = 0.0
         except:
-            texto = ocr_result_sign[0:3]
-            OCR_adjustment = float(
-                texto.replace('°', '').replace('º', '').replace(' ', '').replace('$', '5').replace('\n', '').replace(
-                    'PO', ''))
-            OCR_test_adjustment = float(re.sub('\D', texto))
+            texto = ocr_result_sign
+            print(texto)
+            OCR_adjustment = 0.0#float(re.sub(r'[^0-9]', '', texto))
+                # texto.replace('°', '').replace('º', '').replace(' ', '').replace('$', '5').replace('\n', '').replace(
+                #     'PO', ''))
+
     elif Joints == 2:
         try:
             OCR_adjustment = float(ocr_result_sign[0:4].replace('º\n', '').replace('º', '').replace(' ', ''))
@@ -517,15 +569,18 @@ def mostrarJ():
                 ocr_disp[0:4].replace('mm', '').replace('nm', '').replace('mn', '').replace(' ', ''))
             OCR_test_adjustment = float(re.sub('\D', ocr_result_sign))
             OCR_test_displacement = float(re.sub('\D', ocr_disp))
+            print(f"displacement: {OCR_test_displacement}")
         except:
             OCR_adjustment = float(ocr_result_sign[0:3].replace('º\n', '').replace('º', '').replace(' ', ''))
             OCR_displacement = float(
                 ocr_disp[0:3].replace('mm', '').replace('nm', '').replace('mn', '').replace(' ', ''))
             OCR_test_adjustment = float(re.sub('\D', ocr_result_sign))
+
             OCR_test_displacement = float(re.sub('\D', ocr_disp))
+            print(f"displacement: {OCR_test_displacement}")
     else:
         print("Error junta reconocida errónea")
-
+    # print(OCR_test_adjustment)
     ###################################################################################################################
     ####################################################MODELO MNIST###################################################
     ###################################################################################################################
@@ -555,8 +610,8 @@ def mostrarJ():
     # model.save('cnn.model_L')
     # model.save('cnn.model')
 
-    # model = tf.keras.models.load_model('cnn.model_L')
-    model = tf.keras.models.load_model('cnn.model')
+    model = tf.keras.models.load_model('cnn.model_L')
+    # model = tf.keras.models.load_model('cnn.model')
     loss, accuracy = model.evaluate(X_test, y_test)
     # graf_DNN(history,epochs)
     digit0 = 0;
@@ -589,18 +644,21 @@ def mostrarJ():
         finally:
             image_no += 1
     digitos = float(digit3*100+digit0 * 10 + digit1 + (digit2 / 10))
+    print(digitos)
     # HACER GLOBAL LA VARIABLE QUE AL FINAL CONTENGA LOS DÍGITOS
     if Joints == 1 or Joints == 3 or Joints == 0:
         if digitos == OCR_adjustment:
             print("````````````````````````````````````````````````````````````````````````")
-            print(f"{mensajito} el ángulo de arreglo de la junta {Joints} y es: {signo * digitos}")
+            print(f"Se pudo leer adecuadamente el ángulo de arreglo de la junta 1 y es: {signo * digitos}")
             print("........................................................................")
-            oracion = f"{mensajito} el ángulo de arreglo de la junta {Joints} y es: {signo * digitos}"
+            oracion = f"Se pudo leer adecuadamente el ángulo de arreglo de la junta 1 y es: {signo * digitos}"
         elif digitos != OCR_adjustment:
             print("````````````````````````````````````````````````````````````````````````")
-            print(f"{mensajito} el ángulo de arreglo de la junta {Joints} y es: {OCR_adjustment / 10}")
+            # print(f"{mensajito} el ángulo de arreglo de la junta {Joints} y es: {signo*digitos}")
+            print(f"Se pudo leer adecuadamente el ángulo de arreglo de la junta 1 y es: {signo * digitos }")
             print("........................................................................")
-            oracion = f"{mensajito} el ángulo de arreglo de la junta {Joints} y es: {OCR_adjustment / 10}"
+            oracion = f"Se pudo leer adecuadamente el ángulo de arreglo de la junta 1 y es: {signo * digitos}"
+            # oracion = f"{mensajito} el ángulo de arreglo de la junta {Joints} y es: {signo*OCR_adjustment}"
         else:
             print("no funciono bien ")
     elif Joints == 2:
@@ -621,6 +679,7 @@ def mostrarJ():
     mytext1.insert(0.1, str(oracion))  # 0.1 porque es donde empieza a poner el texto
 
 
+
 def showimagencort():
     if os.path.isfile(f"cutted.jpg"):
         # cortada = PIL.Image.open("D:/Documentos/UVG/QUINTO AÑO/Segundo Semestre/Diseño e innovación/GIT/Optimizacion-del-reconocimiento-de-variables-de-Varioguide/Prototipos/OCR1/cutted.jpg")
@@ -633,7 +692,20 @@ def showimagencort():
     else:
         print("No se encontró la imagen de elipse con dígitos.")
     return
+juntas = [[1.1, 0.2, 1.1]]
 
+def TCP_button():
+    for index in range(0, num_juntas):
+        print("Mandar mensaje...")
+        msg = TCPsend(juntas[index])
+        print("Recibir mensaje...")
+        msg_recv = TCPreceive()
+
+        print(msg)
+        print("\n")
+        print(msg_recv)
+        print("\n")
+    return
 
 # Create Canvas
 canvas1 = Canvas(root, width=1000, height=750)
@@ -653,7 +725,7 @@ button1 = Button(root, text="Reconocer Valores", command=mostrarJ)
 button1.place(x=25, y=50, width=130, height=50)
 button2 = Button(root, text="Salir", command=exitclick)
 button2.place(x=900, y=700, width=100, height=50)
-button3 = Button(root, text="Enviar Valores")
+button3 = Button(root, text="Enviar Valores",command= TCP_button)
 button3.place(x=850, y=50, width=100, height=50)
 button4 = Button(root, text="Limpiar", command=cleart)
 button4.place(x=705, y=395, width=50, height=50)
@@ -661,3 +733,4 @@ button5 = Button(root, text="Mostar digito", command=showimagencort)
 button5.place(x=25, y=250, width=50, height=50)
 
 root.mainloop()
+

@@ -32,6 +32,7 @@ from cv2 import dnn_superres
 import glob
 import tensorflow as tf
 import os
+import re
 from skimage.filters import threshold_multiotsu
 from skimage import measure
 from imutils import contours
@@ -68,13 +69,13 @@ def obtenercaptura():
 
 # MANEJO DE DATOS DE LOS SISTEMAS
 def Handdle(String):
-    if String.find('Joint 1') >=0 or String.find('int 1') >=0:
+    if String.find('Joint 1') >=0 or String.find('int 1') >=0 or String.find('B') >=0:
         Joint = 1;
         aftermath = 'Se leyó adecuadamente';
-    elif String.find('Joint 2') >=0 or String.find('int 2')>=0:
+    elif String.find('Joint 2') >=0 or String.find('int 2')>=0 :
         Joint = 2;
         aftermath = 'Se leyó adecuadamente';
-    elif String.find('Joint 3') >=0 or String.find('int 3')>=0:
+    elif String.find('Joint 3') >=0 or String.find('int 3')>=0 :
         Joint = 3;
         aftermath = 'Se leyó adecuadamente';
     else:
@@ -210,7 +211,7 @@ def save_img(image,filename):
     return status
 
 def crop_img(image,cx,cy):#,x,y):#imgnp
-    fig0=image[ cy-40:cy+40,cx-95:cx+90,:]
+    fig0=image[ cy-40:cy+40,cx-85:cx+90,:]
     return fig0
 
 def Blurred(image):
@@ -239,12 +240,14 @@ def dibujo_contornos(picture):
     blurred = cv2.GaussianBlur(imagen, (5, 5), 0)
     #lower = np.array([39, 40, 38])
     # lower = np.array([38,38,36])# en caso sea ultimas fotos
-    lower = np.array([37, 35, 37])  # en caso sea live
+    # lower = np.array([37, 35, 37])  # en caso sea live
+    lower = np.array([9,5,4])
     # lower = np.array([41, 40, 40])  # en caso sea live
     # lower = np.array([10, 9, 12])  # en caso sea live
     #upper = np.array([55, 57, 75])
     #upper = np.array([73,73,72]) #en caso sea ultimas fotos
-    upper = np.array([56, 65, 72])  # en caso sea live
+    # upper = np.array([56, 65, 72])  # en caso sea live
+    upper = np.array([17,17,28])
     # upper = np.array([25, 23, 46])  # en caso sea live
     # upper = np.array([25, 23, 46])  # en caso sea live
     mask = cv2.inRange(blurred, lower, upper)
@@ -284,9 +287,9 @@ def contorno_numeros(corte): # entra imagen normal y sale imagen normal con cont
                 # estado = cv2.imwrite('contornosnum.jpg', corteguardar)
                 fig0 = roi[y-2:y+h+2, x-3:x+w+3]
                 fig0 = cv2.cvtColor(fig0, cv2.COLOR_GRAY2RGB)
-                # plt.imshow(fig0, cmap='gray')
-                # plt.title('Example', fontweight="bold")
-                # plt.show()
+                plt.imshow(fig0, cmap='gray')
+                plt.title('Example', fontweight="bold")
+                plt.show()
                 # digit = thresh[y:y + h, x:x + w]
                 # resized_digit = cv2.resize(digit, (18, 18))
                 # plt.imshow(fig0,cmap='gray')
@@ -370,7 +373,7 @@ image_file='J3[3.2].jpg'
 
 ##################################      CAPTURA O LECTURA       #####################################################
 #CASO
-CASO=2
+CASO=1
 if CASO==1:
     img=obtenercaptura()
 elif CASO ==2:
@@ -379,8 +382,8 @@ else:
     print("no se pudo xd")
 img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 hsv = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-# plt.imshow(img,cmap=plt.cm.binary)
-# plt.show()
+plt.imshow(img,cmap=plt.cm.binary)
+plt.show()
 # estado = save_img(img,'normal.jpg')
 
 #img es la imagen original
@@ -397,8 +400,8 @@ umb_img = umbral(blur_img)
 nonoise_img = noise_removal(umb_img) # imagen sin ruido
 thin_img = thin(nonoise_img) # imagen con letras mas delgadas
 thick_img = thick(nonoise_img) #imagen con letras mas gruesas
-ocr_result= pytesseract.image_to_string(nonoise_img)
-estado = save_img(thin_img,'processed.jpg')
+ocr_result= pytesseract.image_to_string(Corte1)
+estado = save_img(umb_img,'processed.jpg')
 
 #Lectura de Junta
 Joints,mensajito = Handdle(str(ocr_result))
@@ -446,10 +449,10 @@ print("-----------------")
 if Joints == 1 or Joints == 3 or Joints == 0:
     try:
         texto = ocr_resultsign[0:4]
-        numeropytess=float(texto.replace('°','').replace('º','').replace('$','5'))
+        numeropytess=float(re.sub(r'[^0-9]', '', texto))#float(texto.replace('°','').replace('º','').replace('$','5'))
     except:
         texto=ocr_resultsign[0:3]
-        numeropytess = float(texto.replace('°', '').replace('º','').replace('$','5'))
+        numeropytess = float(re.sub(r'[^0-9]', '', texto))#float(texto.replace('°', '').replace('º','').replace('$','5'))
 elif Joints == 2:
     try:
         numeropytess=float(ocr_resultsign[0:3].replace('º\n','').replace('º','').replace(' ','').replace('$','5').replace('',''))
@@ -492,7 +495,7 @@ X_test = X_test.reshape(-1,28,28,1)
 # model.save('cnn.model_L')
 # model.save('cnn.model')
 
-model = tf.keras.models.load_model('cnn.model')
+model = tf.keras.models.load_model('cnn.model_L')
 # model = tf.keras.models.load_model('cnn.model')
 loss, accuracy = model.evaluate(X_test, y_test)
 # graf_DNN(history,epochs)
@@ -522,7 +525,9 @@ while os.path.isfile(f"digit{image_no}.png"):
         image_no +=1
 
 digitos= float(digit0*10+digit1+(digit2/10))
+print("NUMBER MNIST")
 print(digitos)
+print("----------------")
 if Joints == 1 or Joints == 3 or Joints ==0:
     if digitos == numeropytess:
         print("````````````````````````````````````````````````````````````````````````")
