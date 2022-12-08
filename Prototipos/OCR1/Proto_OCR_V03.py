@@ -606,3 +606,67 @@ print("........................................................................"
 # ocr_result3= pytesseract.image_to_string(thick_trim)#, config='digits') # con configuracion de digits no funciona bien, no lee nada.
 # print('Digitos detectados:')
 # print(ocr_result3)
+
+
+# if Joints == 1 or Joints == 3 or Joints == 0:
+#     try:
+#         texto = ocr_result_sign
+#         # OCR_test_adjustment = float(re.sub('\D', texto))
+#         print(texto)
+#         OCR_adjustment = texto.replace(
+#             ('°', '').replace('º', '').replace(' ', '').replace('$', '5').replace('\n', '').replace('PO', ''))
+#     except ValueError:
+#
+#         texto = ocr_result_sign
+#         print(texto)
+#         # OCR_test_adjustment = float(re.sub(r'[^0-9]', '', texto))
+#         OCR_adjustment = 0.0
+#     except:
+#         texto = ocr_result_sign
+#         print(texto)
+#         OCR_adjustment = 0.0  # float(re.sub(r'[^0-9]', '', texto))
+#         # texto.replace('°', '').replace('º', '').replace(' ', '').replace('$', '5').replace('\n', '').replace(
+#         #     'PO', ''))
+#
+# elif Joints == 2:
+#     try:
+#         OCR_adjustment = float(ocr_result_sign[0:4].replace('º\n', '').replace('º', '').replace(' ', ''))
+#         OCR_displacement = float(
+#             ocr_disp[0:4].replace('mm', '').replace('nm', '').replace('mn', '').replace(' ', ''))
+#         OCR_test_adjustment = float(re.sub('\D', ocr_result_sign))
+#         OCR_test_displacement = float(re.sub('\D', ocr_disp))
+#         print(f"displacement: {OCR_test_displacement}")
+#     except:
+#         OCR_adjustment = float(ocr_result_sign[0:3].replace('º\n', '').replace('º', '').replace(' ', ''))
+#         OCR_displacement = float(
+#             ocr_disp[0:3].replace('mm', '').replace('nm', '').replace('mn', '').replace(' ', ''))
+#         OCR_test_adjustment = float(re.sub('\D', ocr_result_sign))
+#
+#         OCR_test_displacement = float(re.sub('\D', ocr_disp))
+#         print(f"displacement: {OCR_test_displacement}")
+# else:
+#     print("Error junta reconocida errónea")
+# # print(OCR_test_adjustment)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
