@@ -56,7 +56,7 @@ class jointstosend:
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # Bind the socket to the port
-HOST = "192.168.5.59"  # Standard loopback interface address (localhost)
+HOST = "192.168.131.113"  # Standard loopback interface address (localhost)
 PORT = 80  # Port to listen on (non-privileged ports are > 1023)
 
 server_address = (HOST, PORT)
@@ -250,7 +250,7 @@ def dibujo_contornos(picture):
 
 def recorte_inicial(image, cx, cy):
     # fig0=image[ cy-505:cy+505,cx-665:cx+640,:]
-    fig0 = image[cy - 540:cy + 540, cx - 600:cx + 640, :]
+    fig0 = image[cy - 540:cy + 540, cx - 685:cx + 640, :]
     # fig0 = image[cy - 485:cy + 485, cx - 660:cx + 631, :]
     # fig0 = image[cy - 456:cy + 456, cx - 577:cx + 577, :]
     return fig0
@@ -375,12 +375,11 @@ def TCPreceive():
 root = Tk()
 root.geometry("1000x750")
 
-img=PIL.Image.open("D:/Documentos/UVG/QUINTO AÑO/Segundo Semestre/Diseño e innovación/GIT/Optimizacion-del-reconocimiento-de-variables-de-Varioguide/Prototipos/Imagenes/Imagenes_gui/brain.jpg")
-# img = PIL.Image.open(
-#     "C:/Users/galic/Documents/Diseño/GIT/Trabajo-de-Graduaci-n-SG18483/Prototipos/Imagenes/Imagenes_gui/brain.jpg")
+# img=PIL.Image.open("D:/Documentos/UVG/QUINTO AÑO/Segundo Semestre/Diseño e innovación/GIT/Optimizacion-del-reconocimiento-de-variables-de-Varioguide/Prototipos/Imagenes/Imagenes_gui/brain.jpg")
+img = PIL.Image.open("C:/Users/galic/Documents/Diseño/GIT/Trabajo-de-Graduaci-n-SG18483/Prototipos/Imagenes/Imagenes_gui/brain.jpg")
 bg = ImageTk.PhotoImage(img)
 
-image_file = 'inicial-5.1.jpg'
+image_file = 'inicial-3.9.jpg'
 
 
 def exitclick():
@@ -395,7 +394,7 @@ def cleart():
 
 def mostrarJ():
     # CASO
-    CASO = 2
+    CASO = 1
     if CASO == 1:
         img = obtenercaptura()
     elif CASO == 2:
@@ -564,8 +563,8 @@ def mostrarJ():
     # model.save('cnn.model_L')
     # model.save('cnn.model')
 
-    # model = tf.keras.models.load_model('cnn.model_L')
-    model = tf.keras.models.load_model('cnn.model')
+    model = tf.keras.models.load_model('cnn.model_L')
+    # model = tf.keras.models.load_model('cnn.model')
     loss, accuracy = model.evaluate(X_test, y_test)
     # graf_DNN(history,epochs)
     digit0 = 0;
@@ -659,8 +658,8 @@ def mostrarJ():
 
 def showimagencort():
     if os.path.isfile(f"cutted.jpg"):
-        cortada = PIL.Image.open("D:/Documentos/UVG/QUINTO AÑO/Segundo Semestre/Diseño e innovación/GIT/Optimizacion-del-reconocimiento-de-variables-de-Varioguide/Prototipos/OCR1/cutted.jpg")
-        # cortada = PIL.Image.open("C:/Users/galic/Documents/Diseño/GIT/Trabajo-de-Graduaci-n-SG18483/Prototipos/OCR1/cutted.jpg")
+        # cortada = PIL.Image.open("D:/Documentos/UVG/QUINTO AÑO/Segundo Semestre/Diseño e innovación/GIT/Optimizacion-del-reconocimiento-de-variables-de-Varioguide/Prototipos/OCR1/cutted.jpg")
+        cortada = PIL.Image.open("C:/Users/galic/Documents/Diseño/GIT/Trabajo-de-Graduaci-n-SG18483/Prototipos/OCR1/cutted.jpg")
         trimmed = ImageTk.PhotoImage(cortada)
         imagebox = Text(root, width=25, height=5)
         imagebox.place(x=0, y=660)
