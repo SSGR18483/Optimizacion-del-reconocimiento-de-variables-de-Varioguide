@@ -38,7 +38,7 @@ Este algoritmo de reconocimiento de caracteres por medio de vision de computador
 El sistema de visión por computador cuenta con el comportamiento de forma secuencial. Este algoritmo utiliza la librería de Tesseract para realizar el procedimiento de recolección de caracteres y reconocer que junta es la manejada. Asi mismo el algoritmo procesa las imagenes para de ultimo reconocer una red neuronal que reconozca no tan solo el angulo sino el desplazamiento necesario. 
 En las siguientes imagenes se puede observar el desarrollo del procesamiento de imagenes.
 ### Captura original
-![Original](Prototipos/OCR1/captura4off.jpg)
+![Original](Prototipos/OCR1/JOINTS/captura4off.jpg)
 ### Procesamiento
 ![Procesada](Prototipos/OCR1/processed.jpg)
 ### Recortada
