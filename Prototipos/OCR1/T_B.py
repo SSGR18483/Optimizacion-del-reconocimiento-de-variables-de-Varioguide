@@ -459,7 +459,7 @@ def mostrarJ():
             pass
     elif Joints == 0 or Joints == 1 or Joints == 3:
         try:
-            trim_angle = Corte1[540-310:540+200,620+120:620+620,:]
+            trim_angle = Corte1[540-310:540+200,620+120:620+620,:]# colocar el area de la fotografía en la que se encuentra la información.
             image_angles, cx, cy = dibujo_contornos(trim_angle)
             print(cx)
             print(cy)
@@ -581,7 +581,6 @@ def mostrarJ():
             # plt.imshow(img[0],cmap=plt.cm.binary)
             # plt.show()
             prediction = model.predict(img)
-            # print(f"el numero es probablemente un {np.argmax(prediction)}")
             if image_no == 1:
                 digit2 = np.argmax(prediction)
             elif image_no == 2:
